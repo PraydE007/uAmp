@@ -1,0 +1,9 @@
+/Users/abondarenk/ucode/uAmp/build/CMakeFiles/rebuild_cache.dir
+/Users/abondarenk/ucode/uAmp/build/CMakeFiles/edit_cache.dir
+/Users/abondarenk/ucode/uAmp/build/app/CMakeFiles/rebuild_cache.dir
+/Users/abondarenk/ucode/uAmp/build/app/CMakeFiles/edit_cache.dir
+/Users/abondarenk/ucode/uAmp/build/app/CMakeFiles/uamp.dir
+/Users/abondarenk/ucode/uAmp/build/app/src/CMakeFiles/rebuild_cache.dir
+/Users/abondarenk/ucode/uAmp/build/app/src/CMakeFiles/edit_cache.dir
+/Users/abondarenk/ucode/uAmp/build/app/src/CMakeFiles/src.dir
+/Users/abondarenk/ucode/uAmp/build/app/src/CMakeFiles/src_autogen.dir

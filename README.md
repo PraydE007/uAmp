@@ -29,5 +29,5 @@ When Qt5 is installed, follow the instructions below..
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
+* This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+* Icons made by **Pixel perfect** from [flaticon](www.flaticon.com).

@@ -402,10 +402,12 @@
      </widget>
     </item>
     <item>
-     <widget class="QTableView" name="playlistView">
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
+     <widget class="QTreeWidget" name="treeWidget">
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
      </widget>
     </item>
     <item>

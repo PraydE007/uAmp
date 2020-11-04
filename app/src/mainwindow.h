@@ -2,21 +2,13 @@
 #define MAINWINDOW_H
 
 // LOCAL
-#include "AudioFile.h"
+#include "Playlist.h"
 
 // STL
 #include <vector>
 
 // QT
-#include "q_includes.h"
-#include <QDebug>
-#include <QFileDialog>
-#include <QDir>
-#include <QtMultimedia/QMediaPlaylist>
-#include <QtMultimedia/QMediaPlayer>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include <QUrl>
+//#include "q_includes.h"
 
 namespace Ui {
 class MainWindow;
@@ -31,7 +23,6 @@ public:
 
 private slots:
     void addSong();
-    void playSong();
 
 private:
     // ICONS
@@ -47,12 +38,13 @@ private:
     QIcon minusIcon{"app/res/images/minus.png"};
 
     // AUDIO FILES
-    std::vector<AudioFile*> m_songsVector;
+    Playlist* m_playlist;
+//    std::vector<AudioFile*> m_songsVector;
 
     // QT OBJECTS
     Ui::MainWindow *m_ui;
-    QMediaPlayer* m_player;
-    QMediaPlaylist* m_playlist;
+//    QMediaPlayer* m_player;
+//    QMediaPlaylist* m_playlist;
     QStandardItemModel* m_playListModel;
 };
 

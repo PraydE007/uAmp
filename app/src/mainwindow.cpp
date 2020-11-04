@@ -3,26 +3,17 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      m_ui(new Ui::MainWindow),
-      m_player(new QMediaPlayer(this)),
-      m_playlist(new QMediaPlaylist(this)),
-      m_playListModel(new QStandardItemModel(this))
+      m_ui(new Ui::MainWindow)
 {
     // UI INIT
     m_ui->setupUi(this);
-    m_ui->playlistView->setModel(m_playListModel);
-    m_playListModel->setHorizontalHeaderLabels(QStringList()  << tr("Audio Track")
-                                                              << tr("File Path"));
-    m_ui->playlistView->hideColumn(1);
-    m_ui->playlistView->verticalHeader()->setVisible(false);
-    m_ui->playlistView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_ui->playlistView->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_ui->playlistView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_ui->playlistView->horizontalHeader()->setStretchLastSection(true);
 
-    m_player->setPlaylist(m_playlist);
-    m_player->setVolume(100);
-    m_playlist->setPlaybackMode(QMediaPlaylist::Loop);
+    m_ui->treeWidget->setColumnCount(5);
+    QStringList labels;
+    labels << "Title" << "Artist" << "Album"
+           << "Genre" << "Path";
+    m_ui->treeWidget->setHeaderLabels(labels);
+    m_ui->treeWidget->setSortingEnabled(true);
 
     // SETUP IMAGES
     m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
@@ -36,26 +27,28 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->addSongBtn->setIcon(plusIcon);
     m_ui->popSongBtn->setIcon(minusIcon);
 
+    // PLAYER && PLAYLIST SETUP
+    m_playlist(new Playlist(m_player));
+
     // CONNECT SIGNALS
     connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::addSong);
-    connect(m_ui->previousSongBtn, &QPushButton::clicked, m_playlist, &QMediaPlaylist::previous);
-    connect(m_ui->nextSongBtn, &QPushButton::clicked, m_playlist, &QMediaPlaylist::next);
-    connect(m_ui->playSongBtn, &QPushButton::clicked, this, &MainWindow::playSong);
-    connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_player, &QMediaPlayer::pause);
-    connect(m_ui->stopSongBtn, &QPushButton::clicked, m_player, &QMediaPlayer::stop);
-
-    connect(m_ui->playlistView, &QTableView::clicked, [this](const QModelIndex &index) {
-        m_playlist->setCurrentIndex(index.row());
+    connect(m_ui->previousSongBtn, &QPushButton::clicked, m_playlist, &Playlist::prev);
+    connect(m_ui->nextSongBtn, &QPushButton::clicked, m_playlist, &Playlist::next);
+    connect(m_ui->playSongBtn, &QPushButton::clicked, m_playlist, &Playlist::play);
+    connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::pause);
+    connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::stop);
+    connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex &index) {
+        m_playlist->setCurrent(index.row());
     });
-
-    connect(m_playlist, &QMediaPlaylist::currentIndexChanged, [this](int index) {
-        m_ui->songNameLabel->setText(m_playListModel->data(m_playListModel->index(index, 0)).toString());
+    connect(m_playlist, &QMediaPlaylist::currentIndexChanged, [this](int index){
+        qDebug() << m_ui->treeWidget->topLevelItem(index)->text(0);
+        m_ui->songNameLabel->setText(m_ui->treeWidget->topLevelItem(index)->text(0));
     });
 }
 
 MainWindow::~MainWindow() {
     delete m_ui;
-    delete m_player;
+//    delete m_player;
 }
 
 void MainWindow::addSong() {
@@ -64,26 +57,25 @@ void MainWindow::addSong() {
     QStringList files = QFileDialog::getOpenFileNames(this, tr("Choose Audio File"), QDir::homePath(),
                                                       "Audio Files(*.mp3 *.wav *.mp4)");
     foreach (QString filePath, files) {
-        qDebug() << filePath;
-        QList<QStandardItem *> items;
-        items.append(new QStandardItem(QDir(filePath).dirName()));
-        items.append(new QStandardItem(filePath));
-        m_playListModel->appendRow(items);
-        m_playlist->addMedia(QUrl(filePath));
+        TagLib::FileRef f(filePath.toUtf8().constData());
+        TagLib::Tag* tags = f.tag();
+        if (!tags->isEmpty()) {
+            QTreeWidgetItem* item = new QTreeWidgetItem();
+            item->setText(0, tr(tags->title().toCString()));
+            item->setText(1, tr(tags->artist().toCString()));
+            item->setText(2, tr(tags->album().toCString()));
+            item->setText(3, tr(tags->genre().toCString()));
+            item->setText(4, filePath);
+            m_ui->treeWidget->addTopLevelItem(item);
+        } else {
+            qDebug() << "Tags are empty";
+            QTreeWidgetItem* item = new QTreeWidgetItem();
+            item->setText(0, QFileInfo(filePath).fileName());
+            item->setText(1, tr("No artist tag"));
+            item->setText(2, tr("No album tag"));
+            item->setText(3, tr("No genre tag"));
+            item->setText(4, filePath);
+            m_ui->treeWidget->addTopLevelItem(item);
+        }
     }
-}
-
-void MainWindow::playSong() {
-    qDebug() << "play button clicked and song is loaded.";
-    connect(m_player, &QMediaPlayer::mediaStatusChanged,
-            this, [&](QMediaPlayer::MediaStatus status){
-                if(status == QMediaPlayer::LoadedMedia) {
-                    qDebug() << "Media loaded";
-                    m_player->play();
-                } else {
-                    qDebug() << "Media was not loaded";
-                }
-            });
-    m_player->play();
-
 }

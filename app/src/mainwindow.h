@@ -15,15 +15,33 @@ public:
     ~MainWindow();
 
 private:
+    enum RepeatMode {
+        NoRepeat,
+        RepeatSong,
+        RepeatPlaylist
+    };
 
-    // OPEN PLAYLIST FUNCTIONS
+    void ChangeRepeatMode();
+
+    // PLAYLIST FUNCTIONS
     void OpenPlaylist();
     void ParseM3U(std::string filepath);
-    void ParseJSON(std::string filepath);
+    void ParseJPLAYLST(std::string filepath);
+    void SavePlaylist();
+    void ClearPlaylist();
+    void UpdatePlaylist();
+    void NextSong();
 
     // MESSAGES
     void ShowMessageOk(std::string message);
     void ShowErrorOk(std::string message);
+
+    // PLAYLIST VARS
+    RepeatMode repeatMode{NoRepeat};
+    unsigned int selectedSong = 0;
+
+    // WARN VARS
+    std::vector<std::string> testLst;
 
     QImage emptyImage{"app/res/images/empty-image.png"};
     QIcon previousIcon{"app/res/images/previous.png"};

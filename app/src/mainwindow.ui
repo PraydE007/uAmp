@@ -399,30 +399,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QListWidget" name="listWidget">
-      <item>
-       <property name="text">
-        <string>qwe</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>rty</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>asd</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item>
-     <widget class="QListView" name="playlist">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-     </widget>
+     <widget class="QListWidget" name="playlist"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="playlistControlLayout">

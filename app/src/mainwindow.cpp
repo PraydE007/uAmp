@@ -19,11 +19,31 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->popSongBtn->setIcon(minusIcon);
 
     connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
+    connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
+
+    // WARN
+    connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::NextSong);
     // new QListWidgetItem(tr("Oak"), m_ui->listWidget);
 }
 
 MainWindow::~MainWindow() {
     delete m_ui;
+}
+
+void MainWindow::ChangeRepeatMode() {
+    if (repeatMode == NoRepeat) {
+        repeatMode = RepeatSong;
+        UpdatePlaylist();
+        qDebug() << "Repeat Song";
+    } else if (repeatMode == RepeatSong) {
+        repeatMode = RepeatPlaylist;
+        UpdatePlaylist();
+        qDebug() << "Repeat Playlist";
+    } else {
+        repeatMode = NoRepeat;
+        UpdatePlaylist();
+        qDebug() << "No Repeat";
+    }
 }
 
 void MainWindow::OpenPlaylist() {
@@ -53,13 +73,65 @@ void MainWindow::ParseM3U(std::string filepath) {
     }
     while (std::getline(fstream, buffer, '\n')) {
         // OPEN FILE HERE
-        qDebug() << buffer.c_str();
+        {
+            int fd = open(buffer.c_str(), O_RDONLY);
+
+            if (fd > 0) {
+                testLst.push_back(buffer);
+                ::close(fd);
+            }
+        }
+
+        // qDebug() << buffer.c_str();
+        UpdatePlaylist();
     }
     fstream.close();
 }
 
 void MainWindow::ParseJPLAYLST(std::string filepath) {
     
+}
+
+void MainWindow::SavePlaylist() {
+
+}
+
+void MainWindow::ClearPlaylist() {
+    while (m_ui->playlist->count() > 0) {
+        auto item = m_ui->playlist->takeItem(0);
+        delete item;
+    }
+}
+
+void MainWindow::UpdatePlaylist() {
+    ClearPlaylist();
+    for (unsigned int i = selectedSong + 1; i < testLst.size(); i++) {
+        QListWidgetItem *newItem = new QListWidgetItem;
+        newItem->setText(testLst[i].c_str());
+        newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
+        m_ui->playlist->insertItem(i, newItem);
+    }
+    if (repeatMode == RepeatPlaylist) {
+        for (unsigned int i = 0; i < selectedSong; i++) {
+            QListWidgetItem *newItem = new QListWidgetItem;
+            newItem->setText(testLst[i].c_str());
+            newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
+            m_ui->playlist->insertItem(m_ui->playlist->count(), newItem);
+        }
+    }
+}
+
+void MainWindow::NextSong() {
+    if (repeatMode == NoRepeat) {
+        if (selectedSong < testLst.size())
+            selectedSong += 1;
+    }
+    else if (repeatMode == RepeatPlaylist) {
+        selectedSong += 1;
+        if (selectedSong >= testLst.size())
+            selectedSong = 0;
+    }
+    UpdatePlaylist();
 }
 
 void MainWindow::ShowMessageOk(std::string message) {

@@ -2,12 +2,13 @@
 #define Q_INCLUDES_H_
 
 // C INCLUDES
-// #include <fcntl.h>
-// #include <unistd.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 // C++ INCLUDES
 #include <string>
 #include <fstream>
+#include <vector>
 
 // QT INCLUDES
 #include <qmainwindow.h>

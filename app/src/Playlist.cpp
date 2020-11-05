@@ -20,29 +20,29 @@ void Playlist::stop() {
 }
 
 void Playlist::del(const QString& filePath) {
-    m_songs.erase(std::find(m_songs.begin(), m_songs.end(), filePath));
+//    m_songs.erase(std::find(m_songs.begin(), m_songs.end(), filePath));
 }
 
 void Playlist::next() {
-    if (m_currentSong != std::prev(m_songs.end())) {
-        m_currentSong = std::next(m_currentSong);
-        m_player->setMedia(QUrl::fromLocalFile(m_treeWidget.child(m_currentRow).text(4)));
-        emit currentSongChanged(m_treeWidget.child(m_currentRow).text(0));
+    if (m_currentRow < m_treeWidget->topLevelItemCount() - 1) {
+        m_currentRow++;
+        m_player->setMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(m_currentRow)->text(4)));
+        emit currentSongChanged(m_treeWidget->topLevelItem(m_currentRow)->text(0));
     }
 }
 
 void Playlist::prev() {
-    if(m_currentSong != m_songs.begin()) {
-        m_currentSong = std::prev(m_currentSong);
-        m_player->setMedia(QUrl::fromLocalFile(m_treeWidget.child(m_currentRow).text(4)));
-        emit currentSongChanged(m_treeWidget.child(m_currentRow).text(0));
+    if(m_currentRow > 0) {
+        m_currentRow--;
+        m_player->setMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(m_currentRow)->text(4)));
+        emit currentSongChanged(m_treeWidget->topLevelItem(m_currentRow)->text(0));
     }
 }
 
 void Playlist::setCurrent(int index) {
-    m_currentSong = std::find(m_songs.begin(), m_songs.end(), m_songs.at(index));
-    m_player->setMedia(QUrl::fromLocalFile(*m_currentSong));
-    emit currentSongChanged(*m_currentSong);
+    m_currentRow = index;
+    m_player->setMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(index)->text(4)));
+    emit currentSongChanged(m_treeWidget->topLevelItem(index)->text(0));
 }
 
 QWidget* Playlist::getTreeWidget() {

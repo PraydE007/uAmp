@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->popSongBtn->setIcon(minusIcon);
 
     // PLAYER && PLAYLIST SETUP
-    m_playlist(new Playlist(m_player));
+    m_playlist = new Playlist(m_ui->treeWidget);
 
     // CONNECT SIGNALS
     connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::addSong);
@@ -40,9 +40,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex &index) {
         m_playlist->setCurrent(index.row());
     });
-    connect(m_playlist, &QMediaPlaylist::currentIndexChanged, [this](int index){
-        qDebug() << m_ui->treeWidget->topLevelItem(index)->text(0);
-        m_ui->songNameLabel->setText(m_ui->treeWidget->topLevelItem(index)->text(0));
+    connect(m_playlist, &Playlist::currentSongChanged, [this](const QString& song){
+//        qDebug() << m_ui->treeWidget->topLevelItem(index)->text(0);
+        m_ui->songNameLabel->setText(song);
     });
 }
 

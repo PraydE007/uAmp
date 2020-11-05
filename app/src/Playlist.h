@@ -15,24 +15,26 @@ public:
     Playlist(QTreeWidget* treeWidget);
 
     // SONG MANAGEMENT
-    void play();
-    void pause();
-    void stop();
+    void Play();
+    void Pause();
+    void Stop();
 
     // PLAYLIST MANAGEMENT
-    void del(const QString& filePath);
-    void next();
-    void prev();
-    void setCurrent(int index);
+    void ClearPlaylist();
+    void UnselectList();
+    void Del(const QString& filePath);
+    void Next();
+    void Prev();
+    void SetCurrent(int index);
+
+    // INTERFACE
+    void AcceptSong(QString filepath);
 
     // TREE WIDGET MANAGEMENT
-    QWidget* getTreeWidget();
-
-public slots:
-
+    QWidget* GetTreeWidget();
 
 signals:
-    void currentSongChanged(QString song);
+    void CurrentSongChanged(QString song);
 
 private:
     int m_currentRow = 0;

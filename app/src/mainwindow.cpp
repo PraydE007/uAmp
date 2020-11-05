@@ -30,74 +30,79 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ABONDARENK CONNECTS
     connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
-    connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
+    // connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
 
     // WARN
     // connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::NextSong);
 
     // CONNECT SIGNALS
-    connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::addSong);
-    connect(m_ui->previousSongBtn, &QPushButton::clicked, m_playlist, &Playlist::prev);
-    connect(m_ui->nextSongBtn, &QPushButton::clicked, m_playlist, &Playlist::next);
-    connect(m_ui->playSongBtn, &QPushButton::clicked, m_playlist, &Playlist::play);
-    connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::pause);
-    connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::stop);
-    connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex &index) {
-        m_playlist->setCurrent(index.row());
-    });
-    connect(m_playlist, &Playlist::currentSongChanged, [this](const QString& song){
-//        qDebug() << m_ui->treeWidget->topLevelItem(index)->text(0);
-        m_ui->songNameLabel->setText(song);
-    });
+    connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::OpenSong);
+    connect(m_ui->previousSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Prev);
+    connect(m_ui->nextSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Next);
+    connect(m_ui->playSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Play);
+    connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Pause);
+    connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Stop);
+
+    // LAMBDAS
+    connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
+        [this](const QModelIndex &index) {
+            m_playlist->SetCurrent(index.row());
+        }
+    );
+    connect(m_playlist, &Playlist::CurrentSongChanged,
+        [this](const QString& song) {
+            m_ui->songNameLabel->setText(song);
+        }
+    );
 }
 
 MainWindow::~MainWindow() {
     delete m_ui;
-//    delete m_player;
+    // delete m_player;
 }
 
-void MainWindow::addSong() {
-    qDebug() << "Add song pressed";
+void MainWindow::OpenSong() {
+    QStringList files = QFileDialog::getOpenFileNames(
+        this,
+        tr("Choose Audio File"),
+        QDir::homePath(),
+        "Audio Files(*.mp3 *.wav *.mp4)"
+    );
 
-    QStringList files = QFileDialog::getOpenFileNames(this, tr("Choose Audio File"), QDir::homePath(),
-                                                      "Audio Files(*.mp3 *.wav *.mp4)");
-    foreach (QString filePath, files) {
-        TagLib::FileRef f(filePath.toUtf8().constData());
-        TagLib::Tag* tags = f.tag();
-        if (!tags->isEmpty()) {
-            QTreeWidgetItem* item = new QTreeWidgetItem();
-            item->setText(0, tr(tags->title().toCString()));
-            item->setText(1, tr(tags->artist().toCString()));
-            item->setText(2, tr(tags->album().toCString()));
-            item->setText(3, tr(tags->genre().toCString()));
-            item->setText(4, filePath);
-            m_ui->treeWidget->addTopLevelItem(item);
-        } else {
-            qDebug() << "Tags are empty";
-            QTreeWidgetItem* item = new QTreeWidgetItem();
-            item->setText(0, QFileInfo(filePath).fileName());
-            item->setText(1, tr("No artist tag"));
-            item->setText(2, tr("No album tag"));
-            item->setText(3, tr("No genre tag"));
-            item->setText(4, filePath);
-            m_ui->treeWidget->addTopLevelItem(item);
-        }
+    foreach (QString filePath, files)
+        LoadSong(filePath.toUtf8().constData());
+}
+
+void MainWindow::LoadSong(std::string filepath) {
+    TagLib::FileRef f(filepath.c_str());
+    TagLib::Tag* tags = f.tag();
+
+    if (!tags->isEmpty()) {
+        QTreeWidgetItem* item = new QTreeWidgetItem();
+        item->setText(0, tr(tags->title().toCString()));
+        item->setText(1, tr(tags->artist().toCString()));
+        item->setText(2, tr(tags->album().toCString()));
+        item->setText(3, tr(tags->genre().toCString()));
+        item->setText(4, filepath.c_str());
+        m_ui->treeWidget->addTopLevelItem(item);
+    } else {
+        QTreeWidgetItem* item = new QTreeWidgetItem();
+        item->setText(0, QFileInfo(filepath.c_str()).fileName());
+        item->setText(1, tr("No artist tag"));
+        item->setText(2, tr("No album tag"));
+        item->setText(3, tr("No genre tag"));
+        item->setText(4, filepath.c_str());
+        m_ui->treeWidget->addTopLevelItem(item);
     }
 }
 
 void MainWindow::ChangeRepeatMode() {
     if (repeatMode == NoRepeat) {
         repeatMode = RepeatSong;
-        UpdatePlaylist();
-        qDebug() << "Repeat Song";
     } else if (repeatMode == RepeatSong) {
         repeatMode = RepeatPlaylist;
-        UpdatePlaylist();
-        qDebug() << "Repeat Playlist";
     } else {
         repeatMode = NoRepeat;
-        UpdatePlaylist();
-        qDebug() << "No Repeat";
     }
 }
 
@@ -113,6 +118,7 @@ void MainWindow::OpenPlaylist() {
         if (fp.size() < 5 || fp.substr(fp.size() - 4, 4) != ".m3u"
             || fp.size() < 6 || fp.substr(fp.size() - 5, 5) != ".m3u8")
         {
+            m_playlist->ClearPlaylist();
             ParseM3U(fp);
         }
     }
@@ -127,18 +133,12 @@ void MainWindow::ParseM3U(std::string filepath) {
         return;
     }
     while (std::getline(fstream, buffer, '\n')) {
-        // OPEN FILE HERE
-        {
-            int fd = open(buffer.c_str(), O_RDONLY);
+        int fd = open(buffer.c_str(), O_RDONLY);
 
-            if (fd > 0) {
-                testLst.push_back(buffer);
-                ::close(fd);
-            }
+        if (fd > 0) {
+            ::close(fd);
+            LoadSong(buffer);
         }
-
-        // qDebug() << buffer.c_str();
-        UpdatePlaylist();
     }
     fstream.close();
 }
@@ -149,44 +149,6 @@ void MainWindow::ParseJPLAYLST(std::string filepath) {
 
 void MainWindow::SavePlaylist() {
 
-}
-
-void MainWindow::ClearPlaylist() {
-    // while (m_ui->playlist->count() > 0) {
-    //     auto item = m_ui->playlist->takeItem(0);
-    //     delete item;
-    // }
-}
-
-void MainWindow::UpdatePlaylist() {
-    // ClearPlaylist();
-    // for (unsigned int i = selectedSong + 1; i < testLst.size(); i++) {
-    //     QListWidgetItem *newItem = new QListWidgetItem;
-    //     newItem->setText(testLst[i].c_str());
-    //     newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
-    //     m_ui->playlist->insertItem(i, newItem);
-    // }
-    // if (repeatMode == RepeatPlaylist) {
-    //     for (unsigned int i = 0; i < selectedSong; i++) {
-    //         QListWidgetItem *newItem = new QListWidgetItem;
-    //         newItem->setText(testLst[i].c_str());
-    //         newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
-    //         m_ui->playlist->insertItem(m_ui->playlist->count(), newItem);
-    //     }
-    // }
-}
-
-void MainWindow::NextSong() {
-    // if (repeatMode == NoRepeat) {
-    //     if (selectedSong < testLst.size())
-    //         selectedSong += 1;
-    // }
-    // else if (repeatMode == RepeatPlaylist) {
-    //     selectedSong += 1;
-    //     if (selectedSong >= testLst.size())
-    //         selectedSong = 0;
-    // }
-    // UpdatePlaylist();
 }
 
 void MainWindow::ShowMessageOk(std::string message) {

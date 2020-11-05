@@ -5,3 +5,4 @@ set(PROJECT_NAME uamp)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 add_subdirectory(app)
+add_subdirectory(3dparty)

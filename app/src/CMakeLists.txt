@@ -10,7 +10,10 @@ set(CMAKE_AUTOUIC ON)
 
 set(CPPS
     mainwindow.cpp
+    Playlist.cpp
 )
+
+set(CMAKE_PREFIX_PATH "~/.brew/Cellar/qt/5.15.1/")
 
 add_compile_options(
     -std=c++17
@@ -26,11 +29,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ## QT INCLUDE
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
+find_package(Qt5Multimedia REQUIRED)
+find_package(Qt5MultimediaWidgets REQUIRED)
 include_directories(${Qt5Widgets_INCLUDES})
 add_definitions(${Qt5Widgets_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
+include_directories("../../3dparty/lib1")
+link_directories("../../3dparty/lib1")
+link_libraries("taglib")
+
 add_library(src ${CPPS})
+
 
 target_link_libraries(src ${Qt5Widgets_LIBRARIES})
 target_link_libraries(src ${Qt5PrintSupport_LIBRARIES})
+target_link_libraries(src ${Qt5Multimedia_LIBRARIES})

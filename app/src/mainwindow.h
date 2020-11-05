@@ -1,7 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "q_includes.h"
+// LOCAL
+#include "Playlist.h"
 
 namespace Ui {
 class MainWindow;
@@ -13,6 +14,9 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+private slots:
+    void addSong();
 
 private:
     enum RepeatMode {
@@ -43,6 +47,7 @@ private:
     // WARN VARS
     std::vector<std::string> testLst;
 
+    // ICONS
     QImage emptyImage{"app/res/images/empty-image.png"};
     QIcon previousIcon{"app/res/images/previous.png"};
     QIcon stopIcon{"app/res/images/stop.png"};
@@ -55,7 +60,15 @@ private:
     QIcon plusIcon{"app/res/images/plus.png"};
     QIcon minusIcon{"app/res/images/minus.png"};
 
+    // AUDIO FILES
+    Playlist* m_playlist;
+    // std::vector<AudioFile*> m_songsVector;
+
+    // QT OBJECTS
     Ui::MainWindow *m_ui;
+    // QMediaPlayer* m_player;
+    // QMediaPlaylist* m_playlist;
+    QStandardItemModel* m_playListModel;
 };
 
 #endif // MAINWINDOW_H

@@ -240,6 +240,9 @@
             <height>60</height>
            </size>
           </property>
+          <property name="focusPolicy">
+           <enum>Qt::ClickFocus</enum>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -399,7 +402,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QListWidget" name="playlist"/>
+     <!-- <widget class="QListWidget" name="playlist"/> -->
+     <widget class="QTreeWidget" name="treeWidget">
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="playlistControlLayout">

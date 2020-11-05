@@ -5,6 +5,13 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);
 
+    m_ui->treeWidget->setColumnCount(5);
+    QStringList labels;
+    labels << "Title" << "Artist" << "Album"
+           << "Genre" << "Path";
+    m_ui->treeWidget->setHeaderLabels(labels);
+    m_ui->treeWidget->setSortingEnabled(true);
+
     // SETUP IMAGES
     m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
     m_ui->previousSongBtn->setIcon(previousIcon);
@@ -18,16 +25,63 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->addSongBtn->setIcon(plusIcon);
     m_ui->popSongBtn->setIcon(minusIcon);
 
+    // ABONDARENK CONNECTS
     connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
     connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
 
     // WARN
-    connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::NextSong);
-    // new QListWidgetItem(tr("Oak"), m_ui->listWidget);
+    // connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::NextSong);
+
+    m_playlist(new Playlist(m_player));
+
+    // CONNECT SIGNALS
+    connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::addSong);
+    connect(m_ui->previousSongBtn, &QPushButton::clicked, m_playlist, &Playlist::prev);
+    connect(m_ui->nextSongBtn, &QPushButton::clicked, m_playlist, &Playlist::next);
+    connect(m_ui->playSongBtn, &QPushButton::clicked, m_playlist, &Playlist::play);
+    connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::pause);
+    connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::stop);
+    connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex &index) {
+        m_playlist->setCurrent(index.row());
+    });
+    connect(m_playlist, &QMediaPlaylist::currentIndexChanged, [this](int index) {
+        qDebug() << m_ui->treeWidget->topLevelItem(index)->text(0);
+        m_ui->songNameLabel->setText(m_ui->treeWidget->topLevelItem(index)->text(0));
+    });
 }
 
 MainWindow::~MainWindow() {
     delete m_ui;
+//    delete m_player;
+}
+
+void MainWindow::addSong() {
+    qDebug() << "Add song pressed";
+
+    QStringList files = QFileDialog::getOpenFileNames(this, tr("Choose Audio File"), QDir::homePath(),
+                                                      "Audio Files(*.mp3 *.wav *.mp4)");
+    foreach (QString filePath, files) {
+        TagLib::FileRef f(filePath.toUtf8().constData());
+        TagLib::Tag* tags = f.tag();
+        if (!tags->isEmpty()) {
+            QTreeWidgetItem* item = new QTreeWidgetItem();
+            item->setText(0, tr(tags->title().toCString()));
+            item->setText(1, tr(tags->artist().toCString()));
+            item->setText(2, tr(tags->album().toCString()));
+            item->setText(3, tr(tags->genre().toCString()));
+            item->setText(4, filePath);
+            m_ui->treeWidget->addTopLevelItem(item);
+        } else {
+            qDebug() << "Tags are empty";
+            QTreeWidgetItem* item = new QTreeWidgetItem();
+            item->setText(0, QFileInfo(filePath).fileName());
+            item->setText(1, tr("No artist tag"));
+            item->setText(2, tr("No album tag"));
+            item->setText(3, tr("No genre tag"));
+            item->setText(4, filePath);
+            m_ui->treeWidget->addTopLevelItem(item);
+        }
+    }
 }
 
 void MainWindow::ChangeRepeatMode() {
@@ -97,41 +151,41 @@ void MainWindow::SavePlaylist() {
 }
 
 void MainWindow::ClearPlaylist() {
-    while (m_ui->playlist->count() > 0) {
-        auto item = m_ui->playlist->takeItem(0);
-        delete item;
-    }
+    // while (m_ui->playlist->count() > 0) {
+    //     auto item = m_ui->playlist->takeItem(0);
+    //     delete item;
+    // }
 }
 
 void MainWindow::UpdatePlaylist() {
-    ClearPlaylist();
-    for (unsigned int i = selectedSong + 1; i < testLst.size(); i++) {
-        QListWidgetItem *newItem = new QListWidgetItem;
-        newItem->setText(testLst[i].c_str());
-        newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
-        m_ui->playlist->insertItem(i, newItem);
-    }
-    if (repeatMode == RepeatPlaylist) {
-        for (unsigned int i = 0; i < selectedSong; i++) {
-            QListWidgetItem *newItem = new QListWidgetItem;
-            newItem->setText(testLst[i].c_str());
-            newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
-            m_ui->playlist->insertItem(m_ui->playlist->count(), newItem);
-        }
-    }
+    // ClearPlaylist();
+    // for (unsigned int i = selectedSong + 1; i < testLst.size(); i++) {
+    //     QListWidgetItem *newItem = new QListWidgetItem;
+    //     newItem->setText(testLst[i].c_str());
+    //     newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
+    //     m_ui->playlist->insertItem(i, newItem);
+    // }
+    // if (repeatMode == RepeatPlaylist) {
+    //     for (unsigned int i = 0; i < selectedSong; i++) {
+    //         QListWidgetItem *newItem = new QListWidgetItem;
+    //         newItem->setText(testLst[i].c_str());
+    //         newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
+    //         m_ui->playlist->insertItem(m_ui->playlist->count(), newItem);
+    //     }
+    // }
 }
 
 void MainWindow::NextSong() {
-    if (repeatMode == NoRepeat) {
-        if (selectedSong < testLst.size())
-            selectedSong += 1;
-    }
-    else if (repeatMode == RepeatPlaylist) {
-        selectedSong += 1;
-        if (selectedSong >= testLst.size())
-            selectedSong = 0;
-    }
-    UpdatePlaylist();
+    // if (repeatMode == NoRepeat) {
+    //     if (selectedSong < testLst.size())
+    //         selectedSong += 1;
+    // }
+    // else if (repeatMode == RepeatPlaylist) {
+    //     selectedSong += 1;
+    //     if (selectedSong >= testLst.size())
+    //         selectedSong = 0;
+    // }
+    // UpdatePlaylist();
 }
 
 void MainWindow::ShowMessageOk(std::string message) {

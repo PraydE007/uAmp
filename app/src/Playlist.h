@@ -1,11 +1,11 @@
 #pragma once
 
-//STANDARD LIB
+// STANDARD LIB
 #include <vector>
 #include <algorithm>
 #include <iterator>
 
-//QT
+// QT
 #include "q_includes.h"
 
 class Playlist : public QObject {
@@ -14,18 +14,18 @@ class Playlist : public QObject {
 public:
     Playlist(QTreeWidget* treeWidget);
 
-    //SONG MANAGEMENT
+    // SONG MANAGEMENT
     void play();
     void pause();
     void stop();
 
-    //PLAYLIST MANAGEMENT
+    // PLAYLIST MANAGEMENT
     void del(const QString& filePath);
     void next();
     void prev();
     void setCurrent(int index);
 
-    //TREE WIDGET MANAGEMENT
+    // TREE WIDGET MANAGEMENT
     QWidget* getTreeWidget();
 
 public slots:

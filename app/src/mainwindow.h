@@ -4,12 +4,6 @@
 // LOCAL
 #include "Playlist.h"
 
-// STL
-#include <vector>
-
-// QT
-//#include "q_includes.h"
-
 namespace Ui {
 class MainWindow;
 }
@@ -25,6 +19,34 @@ private slots:
     void addSong();
 
 private:
+    enum RepeatMode {
+        NoRepeat,
+        RepeatSong,
+        RepeatPlaylist
+    };
+
+    void ChangeRepeatMode();
+
+    // PLAYLIST FUNCTIONS
+    void OpenPlaylist();
+    void ParseM3U(std::string filepath);
+    void ParseJPLAYLST(std::string filepath);
+    void SavePlaylist();
+    void ClearPlaylist();
+    void UpdatePlaylist();
+    void NextSong();
+
+    // MESSAGES
+    void ShowMessageOk(std::string message);
+    void ShowErrorOk(std::string message);
+
+    // PLAYLIST VARS
+    RepeatMode repeatMode{NoRepeat};
+    unsigned int selectedSong = 0;
+
+    // WARN VARS
+    std::vector<std::string> testLst;
+
     // ICONS
     QImage emptyImage{"app/res/images/empty-image.png"};
     QIcon previousIcon{"app/res/images/previous.png"};
@@ -33,18 +55,19 @@ private:
     QIcon pauseIcon{"app/res/images/pause.png"};
     QIcon nextIcon{"app/res/images/next.png"};
     QIcon repeatIcon{"app/res/images/repeat.png"};
-    QIcon listIcon{"app/res/images/list.png"};
+    QIcon playlistIcon{"app/res/images/playlist.png"};
+    QIcon saveIcon{"app/res/images/save.png"};
     QIcon plusIcon{"app/res/images/plus.png"};
     QIcon minusIcon{"app/res/images/minus.png"};
 
     // AUDIO FILES
     Playlist* m_playlist;
-//    std::vector<AudioFile*> m_songsVector;
+    // std::vector<AudioFile*> m_songsVector;
 
     // QT OBJECTS
     Ui::MainWindow *m_ui;
-//    QMediaPlayer* m_player;
-//    QMediaPlaylist* m_playlist;
+    // QMediaPlayer* m_player;
+    // QMediaPlaylist* m_playlist;
     QStandardItemModel* m_playListModel;
 };
 

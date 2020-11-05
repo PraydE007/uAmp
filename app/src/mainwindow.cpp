@@ -2,10 +2,7 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-      m_ui(new Ui::MainWindow)
-{
-    // UI INIT
+    : QMainWindow(parent), m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);
 
     m_ui->treeWidget->setColumnCount(5);
@@ -23,12 +20,20 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->pauseSongBtn->setIcon(pauseIcon);
     m_ui->nextSongBtn->setIcon(nextIcon);
     m_ui->repeatBtn->setIcon(repeatIcon);
-    m_ui->loadPlaylistBtn->setIcon(listIcon);
+    m_ui->loadPlaylistBtn->setIcon(playlistIcon);
+    m_ui->savePlaylistBtn->setIcon(saveIcon);
     m_ui->addSongBtn->setIcon(plusIcon);
     m_ui->popSongBtn->setIcon(minusIcon);
 
     // PLAYER && PLAYLIST SETUP
     m_playlist = new Playlist(m_ui->treeWidget);
+
+    // ABONDARENK CONNECTS
+    connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
+    connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
+
+    // WARN
+    // connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::NextSong);
 
     // CONNECT SIGNALS
     connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::addSong);
@@ -78,4 +83,128 @@ void MainWindow::addSong() {
             m_ui->treeWidget->addTopLevelItem(item);
         }
     }
+}
+
+void MainWindow::ChangeRepeatMode() {
+    if (repeatMode == NoRepeat) {
+        repeatMode = RepeatSong;
+        UpdatePlaylist();
+        qDebug() << "Repeat Song";
+    } else if (repeatMode == RepeatSong) {
+        repeatMode = RepeatPlaylist;
+        UpdatePlaylist();
+        qDebug() << "Repeat Playlist";
+    } else {
+        repeatMode = NoRepeat;
+        UpdatePlaylist();
+        qDebug() << "No Repeat";
+    }
+}
+
+void MainWindow::OpenPlaylist() {
+    QFileDialog dialog(this);
+    QString filepath;
+
+    dialog.setNameFilter(tr("Playlist (*.m3u *.m3u8)"));
+    if (dialog.exec()) {
+        filepath = dialog.selectedFiles()[0];
+
+        std::string fp(filepath.toUtf8().constData());
+        if (fp.size() < 5 || fp.substr(fp.size() - 4, 4) != ".m3u"
+            || fp.size() < 6 || fp.substr(fp.size() - 5, 5) != ".m3u8")
+        {
+            ParseM3U(fp);
+        }
+    }
+}
+
+void MainWindow::ParseM3U(std::string filepath) {
+    std::ifstream fstream(filepath);
+    std::string buffer;
+
+    if (!fstream.is_open()) {
+        ShowErrorOk("The file is corrupted or unreadable!");
+        return;
+    }
+    while (std::getline(fstream, buffer, '\n')) {
+        // OPEN FILE HERE
+        {
+            int fd = open(buffer.c_str(), O_RDONLY);
+
+            if (fd > 0) {
+                testLst.push_back(buffer);
+                ::close(fd);
+            }
+        }
+
+        // qDebug() << buffer.c_str();
+        UpdatePlaylist();
+    }
+    fstream.close();
+}
+
+void MainWindow::ParseJPLAYLST(std::string filepath) {
+    
+}
+
+void MainWindow::SavePlaylist() {
+
+}
+
+void MainWindow::ClearPlaylist() {
+    // while (m_ui->playlist->count() > 0) {
+    //     auto item = m_ui->playlist->takeItem(0);
+    //     delete item;
+    // }
+}
+
+void MainWindow::UpdatePlaylist() {
+    // ClearPlaylist();
+    // for (unsigned int i = selectedSong + 1; i < testLst.size(); i++) {
+    //     QListWidgetItem *newItem = new QListWidgetItem;
+    //     newItem->setText(testLst[i].c_str());
+    //     newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
+    //     m_ui->playlist->insertItem(i, newItem);
+    // }
+    // if (repeatMode == RepeatPlaylist) {
+    //     for (unsigned int i = 0; i < selectedSong; i++) {
+    //         QListWidgetItem *newItem = new QListWidgetItem;
+    //         newItem->setText(testLst[i].c_str());
+    //         newItem->setIcon(QIcon(QPixmap::fromImage(emptyImage)));
+    //         m_ui->playlist->insertItem(m_ui->playlist->count(), newItem);
+    //     }
+    // }
+}
+
+void MainWindow::NextSong() {
+    // if (repeatMode == NoRepeat) {
+    //     if (selectedSong < testLst.size())
+    //         selectedSong += 1;
+    // }
+    // else if (repeatMode == RepeatPlaylist) {
+    //     selectedSong += 1;
+    //     if (selectedSong >= testLst.size())
+    //         selectedSong = 0;
+    // }
+    // UpdatePlaylist();
+}
+
+void MainWindow::ShowMessageOk(std::string message) {
+    QMessageBox::information(
+        this,
+        tr("Message"),
+        tr(message.c_str()),
+        QMessageBox::Ok,
+        QMessageBox::Ok
+    );
+}
+
+void MainWindow::ShowErrorOk(std::string message) {
+    QMessageBox::critical(
+        this,
+        tr("Message"),
+        tr(message.c_str()),
+        QMessageBox::Ok,
+        QMessageBox::Ok
+    );
 }

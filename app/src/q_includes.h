@@ -1,15 +1,24 @@
 #ifndef Q_INCLUDES_H_
 #define Q_INCLUDES_H_
 
-// QT
+// C INCLUDES
+#include <fcntl.h>
+#include <unistd.h>
+
+// C++ INCLUDES
+#include <string>
+#include <fstream>
+#include <vector>
+
+// QT INCLUDES
 #include <qmainwindow.h>
 #include <QImage>
-#include <QDebug>
+#include <QObject>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QDir>
 #include <QStandardItemModel>
 #include <QStandardItem>
-#include <QObject>
 #include <QWidget>
 #include <QString>
 #include <QtMultimedia/QMediaPlayer>
@@ -18,13 +27,15 @@
 #include <QTreeWidget>
 #include <QStringList>
 
-// TAG LIB
+// WARN
+#include <QDebug>
+
+// TAGLIB
 #include "../../3dparty/lib1/id3v2tag.h"
 #include "../../3dparty/lib1/mpegfile.h"
 #include "../../3dparty/lib1/id3v2frame.h"
 #include "../../3dparty/lib1/id3v2header.h"
 #include  "../../3dparty/lib1/attachedpictureframe.h"
-
 #include "../../3dparty/lib1/tag.h"
 #include "../../3dparty/lib1/tfile.h"
 #include "../../3dparty/lib1/trueaudiofile.h"

@@ -4,7 +4,7 @@ project("taglib")
 
 set(TAGLIB_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-message(STATUS "TAGLIB DIRECTORY !!!!!!!!!  ${TAGLIB_DIR}  !!!!!!!!!!!!!!!")
+# message(STATUS "TAGLIB DIRECTORY !!!!!!!!!  ${TAGLIB_DIR}  !!!!!!!!!!!!!!!")
 
 file(GLOB CPPS
     "*.h"

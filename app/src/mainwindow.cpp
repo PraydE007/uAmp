@@ -36,10 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ABONDARENK CONNECTS
     connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
-    // connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
-
-    // WARN
-    // connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::NextSong);
+    connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
 
     // CONNECT SIGNALS
     connect(m_ui->addSongBtn, &QPushButton::clicked, this, &MainWindow::OpenSong);
@@ -104,13 +101,13 @@ void MainWindow::LoadSong(std::string filepath) {
 }
 
 void MainWindow::ChangeRepeatMode() {
-//    if (repeatMode == NoRepeat) {
-//        repeatMode = RepeatSong;
-//    } else if (repeatMode == RepeatSong) {
-//        repeatMode = RepeatPlaylist;
-//    } else {
-//        repeatMode = NoRepeat;
-//    }
+    if (m_playlist->GetMode() == Playlist::NoRepeat)
+        m_ui->repeatModeText->setText("Repeat Song");
+    else if (m_playlist->GetMode() == Playlist::RepeatSong)
+        m_ui->repeatModeText->setText("Repeat Playlist");
+    else
+        m_ui->repeatModeText->setText("No Repeat");
+    m_playlist->ChangeRepeatMode();
 }
 
 void MainWindow::OpenPlaylist() {
@@ -127,9 +124,7 @@ void MainWindow::OpenPlaylist() {
         {
             m_playlist->UnselectList();
             m_playlist->ClearPlaylist();
-            qDebug() << "Table is cleared";
             ParseM3U(fp);
-            qDebug() << "Playlist is parsed";
         }
     }
 }

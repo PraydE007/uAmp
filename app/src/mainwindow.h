@@ -27,6 +27,9 @@ private:
 
     void ChangeRepeatMode();
 
+    // TAGS EDITING
+    void prepareMenu(const QPoint & pos);
+
     // PLAYLIST FUNCTIONS
     void OpenPlaylist();
     void ParseM3U(std::string filepath);
@@ -62,13 +65,9 @@ private:
 
     // AUDIO FILES
     Playlist* m_playlist;
-    // std::vector<AudioFile*> m_songsVector;
 
     // QT OBJECTS
     Ui::MainWindow *m_ui;
-    // QMediaPlayer* m_player;
-    // QMediaPlaylist* m_playlist;
-    QStandardItemModel* m_playListModel;
 };
 
 #endif // MAINWINDOW_H

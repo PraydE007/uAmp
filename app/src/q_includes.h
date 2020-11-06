@@ -26,6 +26,7 @@
 #include <QUrl>
 #include <QTreeWidget>
 #include <QStringList>
+#include <QInputDialog>
 
 // WARN
 #include <QDebug>

@@ -16,12 +16,6 @@ public:
     ~MainWindow();
 
 private:
-    enum RepeatMode {
-        NoRepeat,
-        RepeatSong,
-        RepeatPlaylist
-    };
-
     void ChangeRepeatMode();
 
     // PLAYLIST FUNCTIONS

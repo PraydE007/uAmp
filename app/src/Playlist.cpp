@@ -48,10 +48,18 @@ void Playlist::Next() {
 }
 
 void Playlist::Prev() {
-    if (m_currentRow > 0) {
-        m_currentRow--;
+    if (m_treeWidget->topLevelItemCount() > 0) {
+        QModelIndex modelIndex = m_treeWidget->currentIndex();
+        int row = modelIndex.row();
+
+        if (row > 0)
+            row--;
+        else
+            row = m_treeWidget->topLevelItemCount() - 1;
+        UnselectList();
+        m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
         AcceptSong(m_treeWidget->topLevelItem(m_currentRow)->text(4));
-        emit CurrentSongChanged(m_treeWidget->topLevelItem(m_currentRow)->text(0));
+        // m_treeWidget->topLevelItem(row)->setSelected(true);
     }
 }
 

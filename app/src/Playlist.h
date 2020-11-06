@@ -12,6 +12,12 @@ class Playlist : public QObject {
     Q_OBJECT
 
 public:
+    enum RepeatMode {
+        NoRepeat,
+        RepeatSong,
+        RepeatPlaylist
+    };
+
     Playlist(QTreeWidget* treeWidget);
 
     // SONG MANAGEMENT

@@ -15,36 +15,26 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void addSong();
-
 private:
-    enum RepeatMode {
-        NoRepeat,
-        RepeatSong,
-        RepeatPlaylist
-    };
-
     void ChangeRepeatMode();
 
     // TAGS EDITING
     void prepareMenu(const QPoint & pos);
 
     // PLAYLIST FUNCTIONS
-    void OpenPlaylist();
-    void ParseM3U(std::string filepath);
+    void OpenSong(); //
+    void LoadSong(std::string filepath); //
+    void OpenPlaylist(); //
+    void ParseM3U(std::string filepath); //
     void ParseJPLAYLST(std::string filepath);
     void SavePlaylist();
-    void ClearPlaylist();
-    void UpdatePlaylist();
-    void NextSong();
 
     // MESSAGES
     void ShowMessageOk(std::string message);
     void ShowErrorOk(std::string message);
 
     // PLAYLIST VARS
-    RepeatMode repeatMode{NoRepeat};
+//    RepeatMode repeatMode{NoRepeat};
     unsigned int selectedSong = 0;
 
     // WARN VARS

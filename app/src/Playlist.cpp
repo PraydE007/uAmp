@@ -38,8 +38,15 @@ void Playlist::UnselectList() {
     }
 }
 
-void Playlist::Del(const QString& filePath) {
-    // m_songs.erase(std::find(m_songs.begin(), m_songs.end(), filePath));
+void Playlist::PopSong() {
+    QModelIndex modelIndex = m_treeWidget->currentIndex();
+    int row = modelIndex.row();
+
+    auto item = m_treeWidget->topLevelItem(row);
+    delete item;
+    // m_player->setMedia(nullptr);
+    if (m_treeWidget->topLevelItemCount() == 0)
+        emit CurrentSongChanged("");
 }
 
 void Playlist::Next() {

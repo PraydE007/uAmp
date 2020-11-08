@@ -29,7 +29,7 @@ public:
     void ChangeRepeatMode();
     void ClearPlaylist();
     void UnselectList();
-    void Del(const QString& filePath);
+    void PopSong();
     void Next();
     void Prev();
     void SetCurrent(int index);

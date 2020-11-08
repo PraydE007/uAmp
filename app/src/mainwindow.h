@@ -22,12 +22,13 @@ private:
     void prepareMenu(const QPoint & pos);
 
     // PLAYLIST FUNCTIONS
-    void OpenSong(); //
-    void LoadSong(std::string filepath); //
-    void OpenPlaylist(); //
-    void ParseM3U(std::string filepath); //
+    void OpenSong();
+    void LoadSong(std::string filepath);
+    void OpenPlaylist();
+    void ParseM3U(std::string filepath);
     void ParseJPLAYLST(std::string filepath);
     void SavePlaylist();
+    std::string FilepathToTitle(std::string filepath);
 
     // MESSAGES
     void ShowMessageOk(std::string message);

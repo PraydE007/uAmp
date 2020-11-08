@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->playSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Play);
     connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Pause);
     connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Stop);
+    connect(m_ui->popSongBtn, &QPushButton::clicked, m_playlist, &Playlist::PopSong);
 
     // LAMBDAS
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
@@ -81,16 +82,18 @@ void MainWindow::LoadSong(std::string filepath) {
     TagLib::FileRef f(filepath.c_str());
     TagLib::Tag* tags = f.tag();
 
+    QTreeWidgetItem* item = new QTreeWidgetItem();
     if (!tags->isEmpty()) {
-        QTreeWidgetItem* item = new QTreeWidgetItem();
-        item->setText(0, tr(tags->title().toCString())); // CHECK IF EXIST
+        if (tags->title().isEmpty())
+            item->setText(0, tr(FilepathToTitle(filepath).c_str()));
+        else
+            item->setText(0, tr(tags->title().toCString()));
         item->setText(1, tr(tags->artist().toCString()));
         item->setText(2, tr(tags->album().toCString()));
         item->setText(3, tr(tags->genre().toCString()));
         item->setText(4, filepath.c_str());
         m_ui->treeWidget->addTopLevelItem(item);
     } else {
-        QTreeWidgetItem* item = new QTreeWidgetItem();
         item->setText(0, QFileInfo(filepath.c_str()).fileName());
         item->setText(1, tr("No artist tag"));
         item->setText(2, tr("No album tag"));
@@ -98,6 +101,19 @@ void MainWindow::LoadSong(std::string filepath) {
         item->setText(4, filepath.c_str());
         m_ui->treeWidget->addTopLevelItem(item);
     }
+}
+
+std::string MainWindow::FilepathToTitle(std::string filepath) {
+    int slash = filepath.size();
+    for (; filepath[slash] != '/' && slash > 0; slash--);
+
+    std::string file(filepath.begin() + slash + 1, filepath.end());
+
+    int dot = file.size();
+    for (; file[dot] != '.' && dot > 0; dot--);
+
+    std::string title(file.begin(), file.begin() + dot);
+    return title;
 }
 
 void MainWindow::ChangeRepeatMode() {
@@ -149,7 +165,7 @@ void MainWindow::ParseM3U(std::string filepath) {
 }
 
 void MainWindow::ParseJPLAYLST(std::string filepath) {
-    
+
 }
 
 void MainWindow::SavePlaylist() {
@@ -177,8 +193,7 @@ void MainWindow::ShowErrorOk(std::string message) {
 }
 
 // CUSTOM CONTEXT MENU
-void MainWindow::prepareMenu(const QPoint & pos)
-{
+void MainWindow::prepareMenu(const QPoint & pos) {
     QTreeWidget *tree = m_ui->treeWidget;
 
     QTreeWidgetItem *nd = tree->itemAt(pos);
@@ -190,7 +205,7 @@ void MainWindow::prepareMenu(const QPoint & pos)
         QAction *setArtist = new QAction(tr("Edit artist"), this);
         QAction *setAlbum = new QAction(tr("Edit album"), this);
         QAction *setGenre = new QAction(tr("Edit genre"), this);
-        
+
         connect(setTittle, &QAction::triggered, [this, nd] () {
             bool ok;
 
@@ -249,11 +264,11 @@ void MainWindow::prepareMenu(const QPoint & pos)
             }
         });
 
-      QMenu menu(this);
-      menu.addAction(setTittle);
-      menu.addAction(setArtist);
-      menu.addAction(setAlbum);
-      menu.addAction(setGenre);
-      menu.exec(tree->mapToGlobal(pos));
+        QMenu menu(this);
+        menu.addAction(setTittle);
+        menu.addAction(setArtist);
+        menu.addAction(setAlbum);
+        menu.addAction(setGenre);
+        menu.exec(tree->mapToGlobal(pos));
     }
 }

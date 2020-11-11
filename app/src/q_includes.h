@@ -27,6 +27,12 @@
 #include <QTreeWidget>
 #include <QStringList>
 #include <QInputDialog>
+#include <QMouseEvent>
+#include <QProgressBar>
+#include <QSlider>
+#include <QEvent>
+#include <QPixmap>
+#include <QByteArray>
 
 // WARN
 #include <QDebug>

@@ -3,6 +3,8 @@
 
 // LOCAL
 #include "Playlist.h"
+#include "ProgressBar.h"
+#include "ImageEdit.h"
 
 namespace Ui {
 class MainWindow;
@@ -52,6 +54,9 @@ private:
     QIcon saveIcon{"app/res/images/save.png"};
     QIcon plusIcon{"app/res/images/plus.png"};
     QIcon minusIcon{"app/res/images/minus.png"};
+
+    // PROGRESS BAR
+    ProgressBar* m_progressBar;
 
     // AUDIO FILES
     Playlist* m_playlist;

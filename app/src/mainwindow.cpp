@@ -2,7 +2,9 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), m_ui(new Ui::MainWindow) {
+    : QMainWindow(parent), m_progressBar(new ProgressBar(parent)),
+    m_ui(new Ui::MainWindow)
+    {
     m_ui->setupUi(this);
 
     m_ui->treeWidget->setColumnCount(5);
@@ -26,13 +28,12 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->addSongBtn->setIcon(plusIcon);
     m_ui->popSongBtn->setIcon(minusIcon);
 
-    // PLAYER && PLAYLIST SETUP
-    m_playlist = new Playlist(m_ui->treeWidget);
+    // PROGRESS BAR REPLACEMENT
+    m_ui->progressBar->parentWidget()->layout()->replaceWidget(m_ui->progressBar, m_progressBar);
+    delete m_ui->progressBar;
 
-    // PROGRESSBAR SETUP
-    m_ui->progressBar->setRange(0, 100);
-    m_ui->progressBar->setValue(0);
-    m_ui->progressBar->setEnabled(true);
+    // PLAYER && PLAYLIST SETUP
+    m_playlist = new Playlist(m_ui->treeWidget, m_progressBar, m_ui->volumeSlider);
 
     // ABONDARENK CONNECTS
     connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
@@ -56,9 +57,20 @@ MainWindow::MainWindow(QWidget *parent)
                 m_playlist->SetCurrent(index.row());
         }
     );
+    connect(m_ui->treeWidget, &QTreeWidget::customContextMenuRequested,this,&MainWindow::prepareMenu);
     connect(m_playlist, &Playlist::CurrentSongChanged,
         [this](const QString& song) {
             m_ui->songNameLabel->setText(song);
+        }
+    );
+    connect(m_playlist, &Playlist::CurrentImageChanged,
+        [this](QPixmap pixmap) {
+            m_ui->albumImage->setPixmap(pixmap);
+        }
+    );
+    connect(m_playlist, &Playlist::NoImage,
+        [this] {
+            m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
         }
     );
 }
@@ -195,6 +207,7 @@ void MainWindow::prepareMenu(const QPoint & pos)
         QAction *setArtist = new QAction(tr("Edit artist"), this);
         QAction *setAlbum = new QAction(tr("Edit album"), this);
         QAction *setGenre = new QAction(tr("Edit genre"), this);
+        QAction *setImage = new QAction(tr("Edit image"), this);
         
         connect(setTittle, &QAction::triggered, [this, nd] () {
             bool ok;
@@ -209,6 +222,7 @@ void MainWindow::prepareMenu(const QPoint & pos)
                 nd->setText(0, text);
                 m_ui->songNameLabel->setText(text);
                 f.save();
+
             }
         });
         connect(setArtist, &QAction::triggered, [this, nd]() {
@@ -254,11 +268,30 @@ void MainWindow::prepareMenu(const QPoint & pos)
             }
         });
 
+        connect(setImage, &QAction::triggered, [this, nd] {
+            std::string fileName = nd->text(4).toUtf8().data();
+            if (fileName.substr(fileName.size() - 3) == "mp3") {
+                QString image = QFileDialog::getOpenFileName(
+                        this,
+                        tr("Choose New Image"),
+                        QDir::homePath(),
+                        "Image(*.jpg)"
+                );
+                if (!image.isEmpty()) {
+                    setNewImage(nd->text(4).toUtf8().data(), image.toUtf8().data());
+                m_ui->albumImage->setPixmap(QPixmap::fromImage(QImage(image)));
+                }
+            } else {
+                this->ShowMessageOk("*.wav formats are not supported.");
+            }
+        });
+
       QMenu menu(this);
       menu.addAction(setTittle);
       menu.addAction(setArtist);
       menu.addAction(setAlbum);
       menu.addAction(setGenre);
+      menu.addAction(setImage);
       menu.exec(tree->mapToGlobal(pos));
     }
 }

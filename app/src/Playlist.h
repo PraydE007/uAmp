@@ -28,12 +28,15 @@ public:
     void Stop();
 
     // PLAYLIST MANAGEMENT
+    void ChangeRepeatMode();
     void ClearPlaylist();
     void UnselectList();
-    void Del(const QString& filePath);
+    void PopSong();
     void Next();
     void Prev();
     void SetCurrent(int index);
+
+    RepeatMode GetMode();
 
     // INTERFACE
     void AcceptSong(QString filepath);
@@ -52,6 +55,7 @@ private:
 
     QSlider* m_slider;
     ProgressBar* m_progressBar;
+    RepeatMode m_mode{NoRepeat};
     QTreeWidget* m_treeWidget;
     QMediaPlayer* m_player;
 };

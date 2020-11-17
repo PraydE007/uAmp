@@ -66,6 +66,10 @@
         "utility": "cpp",
         "variant": "cpp",
         "vector": "cpp",
-        "qstandarditemmodel": "cpp"
+        "qstandarditemmodel": "cpp",
+        "compare": "cpp",
+        "deque": "cpp",
+        "regex": "cpp",
+        "random": "cpp"
     }
 }

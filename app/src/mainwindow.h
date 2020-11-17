@@ -35,13 +35,17 @@ private:
     void ParseJPLAYLST(std::string filepath);
     void SavePlaylist();
     std::string FilepathToTitle(std::string filepath);
+    void SaveM3U(QString fileName);
+    void SaveJPLAYLST(QString fileName);
+    void JPLAYLST_ArrayRead(const rapidjson::Value& array);
+    bool HasDuplicate(QString fileName);
 
     // MESSAGES
     void ShowMessageOk(std::string message);
     void ShowErrorOk(std::string message);
 
     // PLAYLIST VARS
-//    RepeatMode repeatMode{NoRepeat};
+    // RepeatMode repeatMode{NoRepeat};
     unsigned int selectedSong = 0;
 
     // WARN VARS
@@ -61,6 +65,7 @@ private:
     QIcon minusIcon{"app/res/images/minus.png"};
     QIcon rewindIcon{"app/res/images/rewind.png"};
     QIcon forwardIcon{"app/res/images/forward.png"};
+    QIcon shuffleIcon{"app/res/images/shuffle.png"};
 
     // RECENTLY OPENED
     std::vector<std::string> m_recentSongs;

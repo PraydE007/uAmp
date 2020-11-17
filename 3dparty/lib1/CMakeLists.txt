@@ -4,6 +4,8 @@ project("taglib")
 
 set(TAGLIB_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_compile_options(-std=c++11)
+
 # message(STATUS "TAGLIB DIRECTORY !!!!!!!!!  ${TAGLIB_DIR}  !!!!!!!!!!!!!!!")
 
 file(GLOB CPPS

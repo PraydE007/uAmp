@@ -37,6 +37,7 @@ public:
     void Rewind();
     void Forward();
     void SetCurrent(int index);
+    void Shuffle();
 
     RepeatMode GetMode();
 

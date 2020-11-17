@@ -36,6 +36,8 @@
 #include <QPixmap>
 #include <QByteArray>
 #include <QSettings>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 
 // WARN
 #include <QDebug>

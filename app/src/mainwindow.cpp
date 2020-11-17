@@ -280,7 +280,7 @@ void MainWindow::SaveM3U(QString fileName) {
     of << "#EXTM3U" << '\n';
     for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++) {
         of << '\n';
-        of << "#EXTINF:" << -1 << ',' << m_ui->treeWidget->topLevelItem(i)->text(1).toUtf8().constData()
+        of << "#EXTINF:" << -1 << ',' << m_ui->treeWidget->topLevelItem(i)->text(1).toUtf8().constData() // set track duration instead of -1!!!
             << " - " << m_ui->treeWidget->topLevelItem(i)->text(0).toUtf8().constData() << '\n';
         of << m_ui->treeWidget->topLevelItem(i)->text(4).toUtf8().constData() << '\n';
     }
@@ -444,12 +444,63 @@ void MainWindow::prepareMenu(const QPoint & pos) {
     }
 }
 
+void MainWindow::createDialog(const std::vector<std::string>& m_recentFiles) {
+    QDialog dialog(this);
+    dialog.setModal(true);
+    dialog.setWindowTitle("Recently opened");
+
+    // TABLE WIDGET
+    QTableWidget *table = new QTableWidget(m_recentFiles.size(), 2, this);
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->verticalHeader()->setVisible(false);
+    table->horizontalHeader()->setVisible(false);
+
+    // SIZE POLICY
+    QHeaderView* header = table->horizontalHeader();
+    header->setSectionResizeMode(QHeaderView::Stretch);
+
+    // HORIZONTAL LAYOUT
+    QHBoxLayout *hTableLayout = new QHBoxLayout;
+    hTableLayout->addWidget(table);
+
+    // VERTICAL LAYOUT
+    QVBoxLayout *vLayout = new QVBoxLayout;
+    vLayout->addLayout(hTableLayout);
+
+    // FILL TABLE
+    for (auto i = 0ul; i < m_recentFiles.size(); ++i) {
+        qDebug() << m_recentFiles[i].c_str();
+        QFileInfo file(m_recentFiles[i].c_str());
+        qDebug() << file.baseName();
+        qDebug() << file.filePath();
+        table->setItem(i, 0, new QTableWidgetItem(file.baseName()));
+        table->setItem(i, 1, new QTableWidgetItem(file.filePath()));
+    }
+    table->hideColumn(1);
+
+    // CONNECTIONS
+    connect(table, &QTableWidget::itemDoubleClicked, [table] (QTableWidgetItem *item) {
+        int row = item->row();
+        QTableWidgetItem* itemPath = table->item(row, 1);
+        std::string path = itemPath->text().toUtf8().data();
+        if (path.substr(path.size() - 4) == ".mp3") {
+            qDebug() << "open file.mp3";
+        } else if (path.substr(path.size() - 4) == ".wav") {
+            qDebug() << "open file.wav";
+        } else {
+            qDebug() << "open playlist";
+        }
+    });
+    dialog.setLayout(vLayout);
+    dialog.exec();
+}
+
 void MainWindow::openRecentPlaylists() {
     qDebug() << "open recent playlists";
     if (m_recentPlaylists.empty()) {
         this->ShowMessageOk("There is no recently opened playlists.");
     } else {
-
+        createDialog(m_recentPlaylists);
     }
 }
 
@@ -458,6 +509,6 @@ void MainWindow::openRecentSongs() {
     if (m_recentSongs.empty()) {
         this->ShowMessageOk("There is no recently opened songs");
     } else {
-
+        createDialog(m_recentSongs);
     }
 }

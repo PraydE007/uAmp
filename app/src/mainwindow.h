@@ -68,6 +68,8 @@ private:
     QIcon shuffleIcon{"app/res/images/shuffle.png"};
 
     // RECENTLY OPENED
+    void createDialog(const std::vector<std::string>& m_recentFiles);
+
     std::vector<std::string> m_recentSongs;
     std::vector<std::string> m_recentPlaylists;
 

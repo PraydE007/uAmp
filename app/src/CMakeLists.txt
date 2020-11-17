@@ -35,12 +35,14 @@ include_directories(${Qt5Widgets_INCLUDES})
 add_definitions(${Qt5Widgets_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
+## JSON
+include_directories("../../3dparty/rapidjson")
+
 include_directories("../../3dparty/lib1")
 link_directories("../../3dparty/lib1")
 link_libraries("taglib")
 
 add_library(src ${CPPS})
-
 
 target_link_libraries(src ${Qt5Widgets_LIBRARIES})
 target_link_libraries(src ${Qt5PrintSupport_LIBRARIES})

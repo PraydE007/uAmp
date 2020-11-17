@@ -88,6 +88,21 @@ void Playlist::Prev() {
     }
 }
 
+void Playlist::Shuffle() {
+    if (m_treeWidget->topLevelItemCount() > 0) {
+        std::vector<QTreeWidgetItem*> list;
+
+        m_treeWidget->setSortingEnabled(false);
+        while (m_treeWidget->topLevelItemCount() > 0)
+            list.push_back(m_treeWidget->takeTopLevelItem(0));
+        auto rd = std::random_device(); 
+        auto rng = std::default_random_engine(rd());
+        std::shuffle(list.begin(), list.end(), rng);
+        for (size_t i = 0; i < list.size(); i++)
+            m_treeWidget->insertTopLevelItem(i, list[i]);
+    }
+}
+
 void Playlist::SetCurrent(int index) {
     AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
     emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(0));

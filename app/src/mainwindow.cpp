@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->savePlaylistBtn->setIcon(saveIcon);
     m_ui->addSongBtn->setIcon(plusIcon);
     m_ui->popSongBtn->setIcon(minusIcon);
+    m_ui->shuffleButton->setIcon(shuffleIcon);
 
     // PLAYER && PLAYLIST SETUP
     m_playlist = new Playlist(m_ui->treeWidget);
@@ -36,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ABONDARENK CONNECTS
     connect(m_ui->loadPlaylistBtn, &QPushButton::clicked, this, &MainWindow::OpenPlaylist);
+    connect(m_ui->savePlaylistBtn, &QPushButton::clicked, this, &MainWindow::SavePlaylist);
     connect(m_ui->repeatBtn, &QPushButton::clicked, this, &MainWindow::ChangeRepeatMode);
 
     // CONNECT SIGNALS
@@ -46,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Pause);
     connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Stop);
     connect(m_ui->popSongBtn, &QPushButton::clicked, m_playlist, &Playlist::PopSong);
+    connect(m_ui->shuffleButton, &QPushButton::clicked, m_playlist, &Playlist::Shuffle);
 
     // LAMBDAS
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
@@ -74,8 +77,10 @@ void MainWindow::OpenSong() {
         "Audio Files(*.mp3 *.wav *.mp4)"
     );
 
-    foreach (QString filePath, files)
-        LoadSong(filePath.toUtf8().constData());
+    foreach (QString filePath, files) {
+        if (!HasDuplicate(filePath))
+            LoadSong(filePath.toUtf8().constData());
+    }
 }
 
 void MainWindow::LoadSong(std::string filepath) {
@@ -130,17 +135,21 @@ void MainWindow::OpenPlaylist() {
     QFileDialog dialog(this);
     QString filepath;
 
-    dialog.setNameFilter(tr("Playlist (*.m3u *.m3u8)"));
+    dialog.setNameFilter(tr("M3U Playlist (*.m3u *.m3u8);;JPLAYLST Playlist (*.jplaylst)"));
     if (dialog.exec()) {
         filepath = dialog.selectedFiles()[0];
 
         std::string fp(filepath.toUtf8().constData());
-        if (fp.size() < 5 || fp.substr(fp.size() - 4, 4) != ".m3u"
-            || fp.size() < 6 || fp.substr(fp.size() - 5, 5) != ".m3u8")
+        if ((fp.size() > 4 && fp.substr(fp.size() - 4, 4) == ".m3u")
+            || (fp.size() > 5 && fp.substr(fp.size() - 5, 5) == ".m3u8"))
         {
             m_playlist->UnselectList();
             m_playlist->ClearPlaylist();
             ParseM3U(fp);
+        } else if (fp.size() > 9 && fp.substr(fp.size() - 9, 9) == ".jplaylst") {
+            m_playlist->UnselectList();
+            m_playlist->ClearPlaylist();
+            ParseJPLAYLST(fp);
         }
     }
 }
@@ -158,18 +167,142 @@ void MainWindow::ParseM3U(std::string filepath) {
 
         if (fd > 0) {
             ::close(fd);
-            LoadSong(buffer);
+            if (!HasDuplicate(filepath.c_str()))
+                LoadSong(buffer);
         }
     }
     fstream.close();
 }
 
 void MainWindow::ParseJPLAYLST(std::string filepath) {
+    rapidjson::Document document;
+    std::ifstream fstream(filepath);
+    std::string buffer;
+    std::string json;
 
+    if (!fstream.is_open()) {
+        ShowErrorOk("The file is corrupted or unreadable!");
+        return;
+    }
+    while (std::getline(fstream, buffer))
+        json += buffer + '\n';
+    fstream.close();
+    document.Parse(json.c_str());
+    if (document.IsObject()) {
+        if (document.HasMember("type")) {
+            if (document["type"].IsString()) {
+                if ((std::string(document["type"].GetString()) == "JPLAYLST")) {
+                    if (document.HasMember("playlist")) {
+                        if (document["playlist"].IsArray()) {
+                            JPLAYLST_ArrayRead(document["playlist"]);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ShowErrorOk("The file does not meet JPLAYLST standard!");
+}
+
+void MainWindow::JPLAYLST_ArrayRead(const rapidjson::Value& array) {
+    bool ferr = false;
+
+    for (rapidjson::SizeType i = 0; i < array.Size(); i++) {
+        if (array[i].IsString()) {
+            int fd = open(array[i].GetString(), O_RDONLY);
+
+            if (fd > 0) {
+                ::close(fd);
+                if (!HasDuplicate(array[i].GetString()))
+                    LoadSong(array[i].GetString());
+            }
+            else
+                ferr = true;
+        }
+    }
+    if (ferr)
+        ShowMessageOk("Some files are corrupted or missing!");
+}
+
+bool MainWindow::HasDuplicate(QString fileName) {
+    for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++) {
+        if (m_ui->treeWidget->topLevelItem(i)->text(4) == fileName)
+            return true;
+    }
+    return false;
 }
 
 void MainWindow::SavePlaylist() {
+    QString selectedFilter;
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save Playlist"), "",
+        tr("M3U Playlist (*.m3u);;M3U Unicode Playlist (*.m3u8);;JPLAYLST Playlist (*.jplaylst);;All Files (*)"),
+        &selectedFilter
+    );
 
+    if (fileName.isEmpty())
+        return;
+    else if (m_ui->treeWidget->topLevelItemCount() > 0) {
+        if (selectedFilter == "M3U Playlist (*.m3u)" ||
+            selectedFilter == "M3U Unicode Playlist (*.m3u8)")
+            SaveM3U(fileName);
+        else if (selectedFilter == "JPLAYLST Playlist (*.jplaylst)")
+            SaveJPLAYLST(fileName);
+    }
+}
+
+void MainWindow::SaveM3U(QString fileName) {
+    std::ofstream of(fileName.toUtf8().constData(), std::ofstream::out);
+
+    if (!of.is_open()) {
+        QMessageBox::information(this, tr("Unable to open file"), strerror(errno));
+        return;
+    }
+
+    of << "#EXTM3U" << '\n';
+    for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++) {
+        of << '\n';
+        of << "#EXTINF:" << -1 << ',' << m_ui->treeWidget->topLevelItem(i)->text(1).toUtf8().constData()
+            << " - " << m_ui->treeWidget->topLevelItem(i)->text(0).toUtf8().constData() << '\n';
+        of << m_ui->treeWidget->topLevelItem(i)->text(4).toUtf8().constData() << '\n';
+    }
+    of.close();
+}
+
+void MainWindow::SaveJPLAYLST(QString fileName) {
+    std::ofstream of(fileName.toUtf8().constData(), std::ofstream::out);
+
+    if (!of.is_open()) {
+        QMessageBox::information(this, tr("Unable to open file"), strerror(errno));
+        return;
+    }
+
+    rapidjson::Document document;
+    document.SetObject();
+
+    rapidjson::Value playlist(rapidjson::kArrayType);
+    for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++) {
+        const char* string = m_ui->treeWidget->topLevelItem(i)->text(4).toUtf8().constData();
+
+        playlist.PushBack(
+            rapidjson::Value().SetString(string, ::strlen(string), document.GetAllocator()),
+            document.GetAllocator()
+        );
+    }
+
+    document.AddMember("type", rapidjson::Value().SetString("JPLAYLST"), document.GetAllocator());
+    document.AddMember("playlist", playlist, document.GetAllocator());
+
+    // JSON WRITER
+    rapidjson::StringBuffer buffer;
+    buffer.Clear();
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    // WRITING
+    of << buffer.GetString();
+    of.close();
 }
 
 void MainWindow::ShowMessageOk(std::string message) {

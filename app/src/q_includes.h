@@ -9,6 +9,8 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <algorithm>
+#include <random>
 
 // QT INCLUDES
 #include <qmainwindow.h>
@@ -42,10 +44,15 @@
 #include "../../3dparty/lib1/mpegfile.h"
 #include "../../3dparty/lib1/id3v2frame.h"
 #include "../../3dparty/lib1/id3v2header.h"
-#include  "../../3dparty/lib1/attachedpictureframe.h"
+#include "../../3dparty/lib1/attachedpictureframe.h"
 #include "../../3dparty/lib1/tag.h"
 #include "../../3dparty/lib1/tfile.h"
 #include "../../3dparty/lib1/trueaudiofile.h"
 #include "../../3dparty/lib1/fileref.h"
+
+// RapidJSON
+#include "../../3dparty/rapidjson/document.h"
+#include "../../3dparty/rapidjson/stringbuffer.h"
+#include "../../3dparty/rapidjson/prettywriter.h"
 
 #endif // Q_INCLUDES_H_

@@ -35,6 +35,7 @@ public:
     void Next();
     void Prev();
     void SetCurrent(int index);
+    void Shuffle();
 
     RepeatMode GetMode();
 

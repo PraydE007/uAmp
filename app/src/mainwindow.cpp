@@ -5,6 +5,12 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_progressBar(new ProgressBar(parent)), m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);
 
+    QSettings settings("uAmp", "uamp");
+
+    settings.beginGroup("MainWindow");
+    qDebug() << "Size: " << settings.value("save");
+    settings.endGroup();
+
     m_ui->treeWidget->setColumnCount(5);
     QStringList labels;
     labels << "Title" << "Artist" << "Album"
@@ -81,6 +87,15 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {
+
+    // SAVE STATE //
+    QSettings settings("uAmp", "uamp");
+
+    settings.beginGroup("MainWindow");
+    settings.setValue("save", 1);
+    settings.endGroup();
+    // // // // // //
+
     delete m_ui;
     // delete m_player;
 }

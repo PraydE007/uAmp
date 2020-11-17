@@ -35,6 +35,7 @@
 #include <QEvent>
 #include <QPixmap>
 #include <QByteArray>
+#include <QSettings>
 
 // WARN
 #include <QDebug>

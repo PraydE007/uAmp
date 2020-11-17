@@ -34,6 +34,8 @@ public:
     void PopSong();
     void Next();
     void Prev();
+    void Rewind();
+    void Forward();
     void SetCurrent(int index);
 
     RepeatMode GetMode();

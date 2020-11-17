@@ -18,6 +18,17 @@ m_treeWidget(treeWidget)
     connect(m_progressBar, &QProgressBar::valueChanged, [this](int pos) {
         m_player->setPosition(pos);
     });
+    connect(m_player, &QMediaPlayer::stateChanged, [this](QMediaPlayer::State state) {
+        if (state == QMediaPlayer::StoppedState) {
+            if (m_mode == RepeatSong)
+                m_player->play();
+            else if (m_mode == RepeatPlaylist) {
+                qDebug() << "Song has ended";
+                this->Next();
+                this->Play();
+            }
+        }
+    });
 }
 
 void Playlist::Play() {
@@ -65,26 +76,43 @@ void Playlist::PopSong() {
 }
 
 void Playlist::Next() {
-    if (m_treeWidget->topLevelItemCount() > 0 && m_mode != RepeatSong) {
+//    if (m_treeWidget->topLevelItemCount() > 0 && m_mode != RepeatSong) {
+//        QModelIndex modelIndex = m_treeWidget->currentIndex();
+//        int row = modelIndex.row();
+//
+//        if (row < m_treeWidget->topLevelItemCount() - 1)
+//            row++;
+//        else {
+//            if (m_mode != NoRepeat)
+//                row = 0;
+//        }
+//
+//        UnselectList();
+//
+//        if (m_mode != RepeatSong) {
+//            m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
+//            AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
+//        } else {
+//            m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(modelIndex.row()));
+//            AcceptSong(m_treeWidget->topLevelItem(modelIndex.row())->text(4));
+//        }
+//    }
+    if (m_treeWidget->topLevelItemCount() > 0) {
         QModelIndex modelIndex = m_treeWidget->currentIndex();
         int row = modelIndex.row();
 
-        if (row < m_treeWidget->topLevelItemCount() - 1)
+        qDebug() << row;
+        if (row < m_treeWidget->topLevelItemCount() - 1) {
+            qDebug() << "There is something next";
             row++;
-        else {
-            if (m_mode != NoRepeat)
-                row = 0;
-        }
-
-        UnselectList();
-
-        if (m_mode != RepeatSong) {
-            m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
-            AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
         } else {
-            m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(modelIndex.row()));
-            AcceptSong(m_treeWidget->topLevelItem(modelIndex.row())->text(4));
+            qDebug() << "The last song";
+            row = 0;
         }
+        qDebug() << row;
+        UnselectList();
+        m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
+        AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
     }
 }
 
@@ -93,14 +121,23 @@ void Playlist::Prev() {
         QModelIndex modelIndex = m_treeWidget->currentIndex();
         int row = modelIndex.row();
 
-        if (row > 0)
+        if (row > 0) {
             row--;
-        else
+        } else {
             row = m_treeWidget->topLevelItemCount() - 1;
+        }
         UnselectList();
         m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
         AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
     }
+}
+
+void Playlist::Rewind() {
+    m_player->setPosition(m_player->position() - 10000);
+}
+
+void Playlist::Forward() {
+    m_player->setPosition(m_player->position() + 10000);
 }
 
 void Playlist::SetCurrent(int index) {

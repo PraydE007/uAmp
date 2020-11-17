@@ -17,6 +17,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void openRecentPlaylists();
+    void openRecentSongs();
+
 private:
     void ChangeRepeatMode();
 
@@ -55,6 +59,12 @@ private:
     QIcon saveIcon{"app/res/images/save.png"};
     QIcon plusIcon{"app/res/images/plus.png"};
     QIcon minusIcon{"app/res/images/minus.png"};
+    QIcon rewindIcon{"app/res/images/rewind.png"};
+    QIcon forwardIcon{"app/res/images/forward.png"};
+
+    // RECENTLY OPENED
+    std::vector<std::string> m_recentSongs;
+    std::vector<std::string> m_recentPlaylists;
 
     // PROGRESS BAR
     ProgressBar* m_progressBar;

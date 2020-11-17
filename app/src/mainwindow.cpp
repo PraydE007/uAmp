@@ -27,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->savePlaylistBtn->setIcon(saveIcon);
     m_ui->addSongBtn->setIcon(plusIcon);
     m_ui->popSongBtn->setIcon(minusIcon);
+    m_ui->fastForwardBtn->setIcon(forwardIcon);
+    m_ui->rewindBtn->setIcon(rewindIcon);
 
     // PROGRESS BAR REPLACEMENT
     m_ui->progressBar->parentWidget()->layout()->replaceWidget(m_ui->progressBar, m_progressBar);
@@ -47,6 +49,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->pauseSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Pause);
     connect(m_ui->stopSongBtn, &QPushButton::clicked, m_playlist, &Playlist::Stop);
     connect(m_ui->popSongBtn, &QPushButton::clicked, m_playlist, &Playlist::PopSong);
+    connect(m_ui->rewindBtn, &QPushButton::clicked, m_playlist, &Playlist::Rewind);
+    connect(m_ui->fastForwardBtn, &QPushButton::clicked, m_playlist, &Playlist::Forward);
+    connect(m_ui->actionShow_Playlists, &QAction::triggered, this, &MainWindow::openRecentPlaylists);
+    connect(m_ui->actionShow_Songs, &QAction::triggered, this, &MainWindow::openRecentSongs);
 
     // LAMBDAS
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
@@ -103,16 +109,15 @@ void MainWindow::LoadSong(std::string filepath) {
         item->setText(1, tr(tags->artist().toCString()));
         item->setText(2, tr(tags->album().toCString()));
         item->setText(3, tr(tags->genre().toCString()));
-        item->setText(4, filepath.c_str());
-        m_ui->treeWidget->addTopLevelItem(item);
     } else {
         item->setText(0, QFileInfo(filepath.c_str()).fileName());
         item->setText(1, tr("No artist tag"));
         item->setText(2, tr("No album tag"));
         item->setText(3, tr("No genre tag"));
-        item->setText(4, filepath.c_str());
-        m_ui->treeWidget->addTopLevelItem(item);
     }
+    item->setText(4, filepath.c_str());
+    m_ui->treeWidget->addTopLevelItem(item);
+    m_recentSongs.push_back(filepath);
 }
 
 std::string MainWindow::FilepathToTitle(std::string filepath) {
@@ -153,6 +158,7 @@ void MainWindow::OpenPlaylist() {
             m_playlist->UnselectList();
             m_playlist->ClearPlaylist();
             ParseM3U(fp);
+            m_recentPlaylists.push_back(fp);
         }
     }
 }
@@ -303,5 +309,23 @@ void MainWindow::prepareMenu(const QPoint & pos) {
       menu.addAction(setGenre);
       menu.addAction(setImage);
       menu.exec(tree->mapToGlobal(pos));
+    }
+}
+
+void MainWindow::openRecentPlaylists() {
+    qDebug() << "open recent playlists";
+    if (m_recentPlaylists.empty()) {
+        this->ShowMessageOk("There is no recently opened playlists.");
+    } else {
+
+    }
+}
+
+void MainWindow::openRecentSongs() {
+    qDebug() << "open recent songs";
+    if (m_recentSongs.empty()) {
+        this->ShowMessageOk("There is no recently opened songs");
+    } else {
+
     }
 }

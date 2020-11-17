@@ -11,6 +11,8 @@ set(CMAKE_AUTOUIC ON)
 set(CPPS
     mainwindow.cpp
     Playlist.cpp
+    ProgressBar.cpp
+    ImageEdit.cpp
 )
 
 set(CMAKE_PREFIX_PATH "~/.brew/Cellar/qt/5.15.1/")

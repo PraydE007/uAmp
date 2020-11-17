@@ -8,6 +8,8 @@
 // QT
 #include "q_includes.h"
 
+class ProgressBar;
+
 class Playlist : public QObject {
     Q_OBJECT
 
@@ -18,7 +20,7 @@ public:
         RepeatPlaylist
     };
 
-    Playlist(QTreeWidget* treeWidget);
+    Playlist(QTreeWidget* treeWidget, ProgressBar *progressBar, QSlider* slider);
 
     // SONG MANAGEMENT
     void Play();
@@ -45,8 +47,15 @@ public:
 
 signals:
     void CurrentSongChanged(QString song);
+    void CurrentImageChanged(QPixmap pixMap);
+    void NoImage();
 
 private:
+    // COVER SETUP
+    QByteArray getCover(const QString& songPath);
+
+    QSlider* m_slider;
+    ProgressBar* m_progressBar;
     RepeatMode m_mode{NoRepeat};
     QTreeWidget* m_treeWidget;
     QMediaPlayer* m_player;

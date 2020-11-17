@@ -1,8 +1,23 @@
 #include "Playlist.h"
+#include "ProgressBar.h"
 
-Playlist::Playlist(QTreeWidget* treeWidget) : m_treeWidget(treeWidget) {
+Playlist::Playlist(QTreeWidget* treeWidget, ProgressBar* progressBar, QSlider* slider) :
+m_slider(slider),
+m_progressBar(progressBar),
+m_treeWidget(treeWidget)
+{
     m_player = new QMediaPlayer();
-    m_player->setVolume(100);
+    m_player->setVolume(50);
+    m_slider->setValue(50);
+
+    connect(m_slider, &QAbstractSlider::valueChanged, [this](int value) {
+        m_player->setVolume(value);
+    });
+    connect(m_player, &QMediaPlayer::durationChanged, m_progressBar, &QProgressBar::setMaximum);
+    connect(m_player, &QMediaPlayer::positionChanged, m_progressBar, &QProgressBar::setValue);
+    connect(m_progressBar, &QProgressBar::valueChanged, [this](int pos) {
+        m_player->setPosition(pos);
+    });
 }
 
 void Playlist::Play() {
@@ -106,12 +121,46 @@ void Playlist::Shuffle() {
 void Playlist::SetCurrent(int index) {
     AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
     emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(0));
+
+    QByteArray dataCover = getCover(m_treeWidget->topLevelItem(index)->text(4));
+
+    if (!dataCover.isEmpty()) {
+        QPixmap pixmap;
+        pixmap.loadFromData(dataCover,"JPG");
+        emit CurrentImageChanged(pixmap);
+    } else {
+        emit NoImage();
+    }
 }
 
 void Playlist::AcceptSong(QString filepath) {
     m_player->setMedia(QUrl::fromLocalFile(filepath));
+    m_progressBar->setSelected(true);
+    m_progressBar->reset();
 }
 
 QWidget* Playlist::GetTreeWidget() {
     return m_treeWidget;
+}
+
+QByteArray Playlist::getCover(const QString& songPath) {
+    if (songPath.isEmpty()) return QByteArray();
+    TagLib::FileRef ref(QFile::encodeName(songPath).constData());
+
+    if (ref.isNull() || !ref.file()) return QByteArray();
+
+    // MP3
+    TagLib::MPEG::File* file = dynamic_cast<TagLib::MPEG::File*>(ref.file());
+    if (file && file->ID3v2Tag()) {
+        TagLib::ID3v2::FrameList apic_frames =
+                file->ID3v2Tag()->frameListMap()["APIC"];
+        if (apic_frames.isEmpty()) return QByteArray();
+
+        TagLib::ID3v2::AttachedPictureFrame* pic =
+                static_cast<TagLib::ID3v2::AttachedPictureFrame*>(apic_frames.front());
+
+        return QByteArray((const char*)pic->picture().data(),
+                          pic->picture().size());
+    }
+    return QByteArray();
 }

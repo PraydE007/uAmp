@@ -9,6 +9,7 @@ m_treeWidget(treeWidget)
     m_player = new QMediaPlayer();
     m_player->setVolume(50);
     m_slider->setValue(50);
+    m_progressBar->setTextVisible(false);
 
     connect(m_slider, &QAbstractSlider::valueChanged, [this](int value) {
         m_player->setVolume(value);
@@ -72,7 +73,7 @@ void Playlist::PopSong() {
     delete item;
     // m_player->setMedia(nullptr);
     if (m_treeWidget->topLevelItemCount() == 0)
-        emit CurrentSongChanged("");
+        emit CurrentSongChanged("", "");
 }
 
 void Playlist::Next() {
@@ -112,7 +113,7 @@ void Playlist::Next() {
         qDebug() << row;
         UnselectList();
         m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
-        AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
+        AcceptSong(m_treeWidget->topLevelItem(row)->text(5));
     }
 }
 
@@ -128,7 +129,7 @@ void Playlist::Prev() {
         }
         UnselectList();
         m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
-        AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
+        AcceptSong(m_treeWidget->topLevelItem(row)->text(5));
     }
 }
 
@@ -157,10 +158,10 @@ void Playlist::Shuffle() {
 }
 
 void Playlist::SetCurrent(int index) {
-    AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
-    emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(0));
+    AcceptSong(m_treeWidget->topLevelItem(index)->text(5));
+    emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(1), m_treeWidget->topLevelItem(index)->text(0));
 
-    QByteArray dataCover = getCover(m_treeWidget->topLevelItem(index)->text(4));
+    QByteArray dataCover = getCover(m_treeWidget->topLevelItem(index)->text(5));
 
     if (!dataCover.isEmpty()) {
         QPixmap pixmap;

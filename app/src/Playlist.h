@@ -48,7 +48,7 @@ public:
     QWidget* GetTreeWidget();
 
 signals:
-    void CurrentSongChanged(QString song);
+    void CurrentSongChanged(QString title, QString name);
     void CurrentImageChanged(QPixmap pixMap);
     void NoImage();
 

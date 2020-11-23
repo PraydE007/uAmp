@@ -5,12 +5,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_progressBar(new ProgressBar(parent)), m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);
 
-    QSettings settings("uAmp", "uamp");
-
-    settings.beginGroup("MainWindow");
-    qDebug() << "Size: " << settings.value("save");
-    settings.endGroup();
-
     m_ui->treeWidget->setColumnCount(5);
     QStringList labels;
     labels << "Title" << "Artist" << "Album"
@@ -64,8 +58,11 @@ MainWindow::MainWindow(QWidget *parent)
     // LAMBDAS
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
         [this](const QModelIndex &index) {
-            if (index.row() >= 0)
+            if (index.row() >= 0) {
+                qDebug() << "current Row Changed SetCurrent";
+                qDebug() << "row:" << index.row();
                 m_playlist->SetCurrent(index.row());
+            }
         }
     );
     connect(m_ui->treeWidget, &QTreeWidget::customContextMenuRequested,this,&MainWindow::prepareMenu);
@@ -84,20 +81,127 @@ MainWindow::MainWindow(QWidget *parent)
             m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
         }
     );
+
+    // LOAD STATE
+    ReadState1();
 }
 
 MainWindow::~MainWindow() {
-
-    // SAVE STATE //
-    QSettings settings("uAmp", "uamp");
-
-    settings.beginGroup("MainWindow");
-    settings.setValue("save", 1);
-    settings.endGroup();
-    // // // // // //
-
+    SaveState();
     delete m_ui;
     // delete m_player;
+}
+
+void MainWindow::SaveState() {
+    SaveJPLAYLST("./app/res/tmp/playlist");
+    SaveWindow1("./app/res/tmp/window");
+}
+
+void MainWindow::SaveWindow1(std::string fileName) {
+    std::ofstream of(fileName, std::ofstream::out);
+
+    if (!of.is_open()) {
+        QMessageBox::information(this, tr("Unable to open file"), strerror(errno));
+        return;
+    }
+
+    rapidjson::Document document;
+    document.SetObject();
+
+    rapidjson::Value playlists(rapidjson::kArrayType);
+    for (size_t i = 0; i < m_recentPlaylists.size(); i++) {
+        playlists.PushBack(
+            rapidjson::Value().SetString(m_recentPlaylists[i].c_str(), m_recentPlaylists[i].size(),
+                document.GetAllocator()),
+            document.GetAllocator()
+        );
+    }
+    rapidjson::Value songs(rapidjson::kArrayType);
+    for (size_t i = 0; i < m_recentSongs.size(); i++) {
+        songs.PushBack(
+            rapidjson::Value().SetString(m_recentSongs[i].c_str(), m_recentSongs[i].size(), document.GetAllocator()),
+            document.GetAllocator()
+        );
+    }
+
+    SaveWindow2(document);
+    document.AddMember("songs", songs, document.GetAllocator());
+    document.AddMember("playlists", playlists, document.GetAllocator());
+
+    // JSON WRITER
+    rapidjson::StringBuffer buffer;
+    buffer.Clear();
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+    // WRITING
+    of << buffer.GetString();
+    of.close();
+}
+
+void MainWindow::SaveWindow2(rapidjson::Document& document) {
+        document.AddMember("type", rapidjson::Value().SetString("SaveState"), document.GetAllocator());
+    document.AddMember("mode",
+        rapidjson::Value().SetInt(static_cast<int>(m_playlist->GetMode())), document.GetAllocator());
+    document.AddMember("volume",
+        rapidjson::Value().SetInt(m_ui->volumeSlider->value()), document.GetAllocator());
+    document.AddMember(
+        "currentSong",
+        rapidjson::Value().SetString(m_playlist->GetUrl(), ::strlen(m_playlist->GetUrl()), document.GetAllocator()),
+        document.GetAllocator()
+    );
+    document.AddMember("currentTime", rapidjson::Value().SetInt64(m_playlist->GetPosition()), document.GetAllocator());
+    document.AddMember("currentSelected",
+        rapidjson::Value().SetInt(m_ui->treeWidget->currentIndex().row()), document.GetAllocator());
+}
+
+void MainWindow::ReadState1() {
+    ParseJPLAYLST("./app/res/tmp/playlist");
+
+    rapidjson::Document document;
+    std::ifstream fstream("./app/res/tmp/window");
+    std::string buffer;
+    std::string json;
+
+    if (!fstream.is_open()) {
+        ShowErrorOk("Configuration file was not found!");
+        return;
+    }
+    while (std::getline(fstream, buffer))
+        json += buffer + '\n';
+    fstream.close();
+    document.Parse(json.c_str());
+
+    if (document.IsObject()) {
+        if (document.HasMember("type") && document.HasMember("mode")
+            && document.HasMember("volume") && document.HasMember("currentSong")
+            && document.HasMember("currentTime") && document.HasMember("currentSelected")
+            && document.HasMember("songs") && document.HasMember("playlists"))
+        {
+            if (document["type"].IsString() && document["mode"].IsInt()
+                && document["volume"].IsInt() && document["currentSong"].IsString()
+                && document["currentTime"].IsInt64() && document["currentSelected"].IsInt()
+                && document["songs"].IsArray() && document["playlists"].IsArray())
+            {
+                if (std::string(document["type"].GetString()) == "SaveState") {
+                    ReadSongsArray(document["songs"]);
+                    ReadPlaylistsArray(document["playlists"]);
+                    ReadState2(document);
+                    return;
+                }
+            }
+        }
+    }
+    ShowErrorOk("Configuration file was corrapted!");
+}
+
+void MainWindow::ReadState2(rapidjson::Document& document) {
+    for (int i = 0; i < document["mode"].GetInt(); i++)
+        ChangeRepeatMode();
+    m_ui->volumeSlider->setValue(document["volume"].GetInt());
+    m_playlist->AcceptSongByUrl(document["currentSong"].GetString());
+    if (document["currentSelected"].GetInt() >= 0)
+        m_playlist->SelectIndex(document["currentSelected"].GetInt());
+    m_playlist->SetTime(document["currentTime"].GetInt64());
 }
 
 void MainWindow::OpenSong() {
@@ -222,7 +326,7 @@ void MainWindow::ParseJPLAYLST(std::string filepath) {
     if (document.IsObject()) {
         if (document.HasMember("type")) {
             if (document["type"].IsString()) {
-                if ((std::string(document["type"].GetString()) == "JPLAYLST")) {
+                if (std::string(document["type"].GetString()) == "JPLAYLST") {
                     if (document.HasMember("playlist")) {
                         if (document["playlist"].IsArray()) {
                             m_recentPlaylists.push_back(filepath);
@@ -255,6 +359,44 @@ void MainWindow::JPLAYLST_ArrayRead(const rapidjson::Value& array) {
     }
     if (ferr)
         ShowMessageOk("Some files are corrupted or missing!");
+}
+
+void MainWindow::ReadSongsArray(const rapidjson::Value& array) {
+    bool ferr = false;
+
+    for (rapidjson::SizeType i = 0; i < array.Size(); i++) {
+        if (array[i].IsString()) {
+            int fd = open(array[i].GetString(), O_RDONLY);
+
+            if (fd > 0) {
+                ::close(fd);
+                m_recentSongs.push_back(array[i].GetString());
+            }
+            else
+                ferr = true;
+        }
+    }
+    if (ferr)
+        ShowMessageOk("Some songs are corrupted or missing!");
+}
+
+void MainWindow::ReadPlaylistsArray(const rapidjson::Value& array) {
+    bool ferr = false;
+
+    for (rapidjson::SizeType i = 0; i < array.Size(); i++) {
+        if (array[i].IsString()) {
+            int fd = open(array[i].GetString(), O_RDONLY);
+
+            if (fd > 0) {
+                ::close(fd);
+                m_recentPlaylists.push_back(array[i].GetString());
+            }
+            else
+                ferr = true;
+        }
+    }
+    if (ferr)
+        ShowMessageOk("Some playlists are corrupted or missing!");
 }
 
 bool MainWindow::HasDuplicate(QString fileName) {

@@ -58,6 +58,14 @@ void Playlist::ClearPlaylist() {
     m_treeWidget->clear();
 }
 
+void Playlist::SelectIndex(int index) {
+    QTreeWidgetItem* item = m_treeWidget->topLevelItem(index);
+
+    m_treeWidget->topLevelItem(index)->setSelected(true);
+    m_treeWidget->setCurrentItem(item);
+    AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
+}
+
 void Playlist::UnselectList() {
     for (int i = 0; i < m_treeWidget->topLevelItemCount(); i++) {
         m_treeWidget->topLevelItem(i)->setSelected(false);
@@ -71,8 +79,11 @@ void Playlist::PopSong() {
     auto item = m_treeWidget->topLevelItem(row);
     delete item;
     // m_player->setMedia(nullptr);
-    if (m_treeWidget->topLevelItemCount() == 0)
+    if (m_treeWidget->topLevelItemCount() <= 0) {
         emit CurrentSongChanged("");
+        AcceptSong("");
+        emit NoImage();
+    }
 }
 
 void Playlist::Next() {
@@ -157,6 +168,7 @@ void Playlist::Shuffle() {
 }
 
 void Playlist::SetCurrent(int index) {
+    qDebug() << "index:" << index;
     AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
     emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(0));
 
@@ -171,15 +183,24 @@ void Playlist::SetCurrent(int index) {
     }
 }
 
+void Playlist::AcceptSongByUrl(QString url) {
+    qDebug() << "url:" << url;
+    m_player->setMedia(QUrl(url));
+    m_progressBar->setSelected(true);
+    m_progressBar->reset();
+}
+
 void Playlist::AcceptSong(QString filepath) {
     m_player->setMedia(QUrl::fromLocalFile(filepath));
     m_progressBar->setSelected(true);
     m_progressBar->reset();
 }
 
-QWidget* Playlist::GetTreeWidget() {
-    return m_treeWidget;
-}
+void Playlist::SetTime(qint64 time) { m_player->setPosition(time); }
+
+QWidget* Playlist::GetTreeWidget() { return m_treeWidget; }
+qint64 Playlist::GetPosition() { return m_player->position(); }
+const char* Playlist::GetUrl() { return m_player->media().request().url().toString().toUtf8().constData(); }
 
 QByteArray Playlist::getCover(const QString& songPath) {
     if (songPath.isEmpty()) return QByteArray();

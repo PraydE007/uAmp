@@ -48,6 +48,15 @@ private:
     // RepeatMode repeatMode{NoRepeat};
     unsigned int selectedSong = 0;
 
+    // SAVE STATE
+    void SaveState();
+    void SaveWindow1(std::string fileName);
+    void SaveWindow2(rapidjson::Document& document);
+    void ReadState1();
+    void ReadState2(rapidjson::Document& document);
+    void ReadSongsArray(const rapidjson::Value& array);
+    void ReadPlaylistsArray(const rapidjson::Value& array);
+
     // WARN VARS
     std::vector<std::string> testLst;
 

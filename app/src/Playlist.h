@@ -30,6 +30,7 @@ public:
     // PLAYLIST MANAGEMENT
     void ChangeRepeatMode();
     void ClearPlaylist();
+    void SelectIndex(int index);
     void UnselectList();
     void PopSong();
     void Next();
@@ -39,9 +40,14 @@ public:
     void SetCurrent(int index);
     void Shuffle();
 
+    void SetTime(qint64 time);
+
     RepeatMode GetMode();
+    qint64 GetPosition();
+    const char* GetUrl();
 
     // INTERFACE
+    void AcceptSongByUrl(QString url);
     void AcceptSong(QString filepath);
 
     // TREE WIDGET MANAGEMENT

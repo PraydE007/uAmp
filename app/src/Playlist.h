@@ -48,6 +48,9 @@ public:
     QWidget* GetTreeWidget();
 
 signals:
+    void LoopSong();
+    void LoopPlaylist();
+    void NoLoop();
     void CurrentSongChanged(QString title, QString name);
     void CurrentImageChanged(QPixmap pixMap);
     void NoImage();
@@ -61,4 +64,5 @@ private:
     RepeatMode m_mode{NoRepeat};
     QTreeWidget* m_treeWidget;
     QMediaPlayer* m_player;
+    QMediaPlaylist* m_playlist;
 };

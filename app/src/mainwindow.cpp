@@ -5,9 +5,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_progressBar(new ProgressBar(parent)), m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);
 
-    m_ui->treeWidget->setColumnCount(5);
+    m_ui->treeWidget->setColumnCount(6);
     QStringList labels;
-    labels << "Title" << "Artist" << "Album"
+    labels << "Name" << "Title" << "Artist" << "Album"
            << "Genre" << "Path";
     m_ui->treeWidget->setHeaderLabels(labels);
     m_ui->treeWidget->setSortingEnabled(true);
@@ -53,9 +53,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->fastForwardBtn, &QPushButton::clicked, m_playlist, &Playlist::Forward);
     connect(m_ui->actionShow_Playlists, &QAction::triggered, this, &MainWindow::openRecentPlaylists);
     connect(m_ui->actionShow_Songs, &QAction::triggered, this, &MainWindow::openRecentSongs);
-    connect(m_ui->shuffleButton, &QPushButton::clicked, m_playlist, &Playlist::Shuffle);
+//    connect(m_ui->shuffleButton, &QPushButton::clicked, m_playlist, &Playlist::Shuffle);
 
     // LAMBDAS
+    connect(m_ui->shuffleButton, &QPushButton::clicked, [this] {
+        m_playlist->Shuffle();
+        m_ui->songNameLabel->setText(tr(""));
+        m_ui->fileLabel->setText(tr(""));
+        m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
+    });
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
         [this](const QModelIndex &index) {
             if (index.row() >= 0) {
@@ -67,12 +73,14 @@ MainWindow::MainWindow(QWidget *parent)
     );
     connect(m_ui->treeWidget, &QTreeWidget::customContextMenuRequested,this,&MainWindow::prepareMenu);
     connect(m_playlist, &Playlist::CurrentSongChanged,
-        [this](const QString& song) {
+        [this](const QString& song, const QString& name) {
             m_ui->songNameLabel->setText(song);
+            m_ui->fileLabel->setText(name);
         }
     );
     connect(m_playlist, &Playlist::CurrentImageChanged,
         [this](QPixmap pixmap) {
+            qDebug() << "Image changed!";
             m_ui->albumImage->setPixmap(pixmap);
         }
     );
@@ -223,23 +231,22 @@ void MainWindow::LoadSong(std::string filepath) {
     TagLib::Tag* tags = f.tag();
 
     QTreeWidgetItem* item = new QTreeWidgetItem();
+    item->setText(0, tr(FilepathToTitle(filepath).c_str()));
     if (!tags->isEmpty()) {
-        if (tags->title().isEmpty())
-            item->setText(0, tr(FilepathToTitle(filepath).c_str()));
-        else
-            item->setText(0, tr(tags->title().toCString()));
-        item->setText(1, tr(tags->artist().toCString()));
-        item->setText(2, tr(tags->album().toCString()));
-        item->setText(3, tr(tags->genre().toCString()));
+        item->setText(1, tr(tags->title().toCString()));
+        item->setText(2, tr(tags->artist().toCString()));
+        item->setText(3, tr(tags->album().toCString()));
+        item->setText(4, tr(tags->genre().toCString()));
     } else {
-        item->setText(0, QFileInfo(filepath.c_str()).fileName());
-        item->setText(1, tr("No artist tag"));
-        item->setText(2, tr("No album tag"));
-        item->setText(3, tr("No genre tag"));
+        item->setText(1, QFileInfo(filepath.c_str()).fileName());
+        item->setText(2, tr("No artist tag"));
+        item->setText(3, tr("No album tag"));
+        item->setText(4, tr("No genre tag"));
     }
-    item->setText(4, filepath.c_str());
+    item->setText(5, filepath.c_str());
     m_ui->treeWidget->addTopLevelItem(item);
-    m_recentSongs.push_back(filepath);
+    if (std::find(m_recentSongs.begin(), m_recentSongs.end(), filepath) == m_recentSongs.end())
+        m_recentSongs.push_back(filepath);
 }
 
 std::string MainWindow::FilepathToTitle(std::string filepath) {
@@ -519,12 +526,12 @@ void MainWindow::prepareMenu(const QPoint & pos) {
 
             QString text = QInputDialog::getText(this, tr("New Title"),
                                                  tr("Title:"), QLineEdit::Normal,
-                                                 nd->text(0), &ok);
+                                                 nd->text(1), &ok);
             if (ok && !text.isEmpty()) {
-                TagLib::FileRef f(nd->text(4).toUtf8().data());
+                TagLib::FileRef f(nd->text(5).toUtf8().data());
 
                 f.tag()->setTitle(text.toUtf8().data());
-                nd->setText(0, text);
+                nd->setText(1, text);
                 m_ui->songNameLabel->setText(text);
                 f.save();
 
@@ -535,9 +542,9 @@ void MainWindow::prepareMenu(const QPoint & pos) {
 
             QString text = QInputDialog::getText(this, tr("New Artist"),
                                                  tr("Artist:"), QLineEdit::Normal,
-                                                 nd->text(1), &ok);
+                                                 nd->text(2), &ok);
             if (ok && !text.isEmpty()) {
-                TagLib::FileRef f(nd->text(4).toUtf8().data());
+                TagLib::FileRef f(nd->text(5).toUtf8().data());
 
                 f.tag()->setArtist(text.toUtf8().data());
                 nd->setText(1, text);
@@ -549,12 +556,12 @@ void MainWindow::prepareMenu(const QPoint & pos) {
 
             QString text = QInputDialog::getText(this, tr("New Album"),
                                                  tr("Album:"), QLineEdit::Normal,
-                                                 nd->text(2), &ok);
+                                                 nd->text(3), &ok);
             if (ok && !text.isEmpty()) {
-                TagLib::FileRef f(nd->text(4).toUtf8().data());
+                TagLib::FileRef f(nd->text(5).toUtf8().data());
 
                 f.tag()->setAlbum(text.toUtf8().data());
-                nd->setText(2, text);
+                nd->setText(3, text);
                 f.save();
             }
         });
@@ -565,16 +572,16 @@ void MainWindow::prepareMenu(const QPoint & pos) {
                                                  tr("Genre:"), QLineEdit::Normal,
                                                  nd->text(3), &ok);
             if (ok && !text.isEmpty()) {
-                TagLib::FileRef f(nd->text(4).toUtf8().data());
+                TagLib::FileRef f(nd->text(5).toUtf8().data());
 
                 f.tag()->setGenre(text.toUtf8().data());
-                nd->setText(3, text);
+                nd->setText(4, text);
                 f.save();
             }
         });
 
         connect(setImage, &QAction::triggered, [this, nd] {
-            std::string fileName = nd->text(4).toUtf8().data();
+            std::string fileName = nd->text(5).toUtf8().data();
             if (fileName.substr(fileName.size() - 3) == "mp3") {
                 QString image = QFileDialog::getOpenFileName(
                         this,
@@ -583,7 +590,7 @@ void MainWindow::prepareMenu(const QPoint & pos) {
                         "Image(*.jpg)"
                 );
                 if (!image.isEmpty()) {
-                    setNewImage(nd->text(4).toUtf8().data(), image.toUtf8().data());
+                    setNewImage(nd->text(5).toUtf8().data(), image.toUtf8().data());
                 m_ui->albumImage->setPixmap(QPixmap::fromImage(QImage(image)));
                 }
             } else {
@@ -636,16 +643,39 @@ void MainWindow::createDialog(const std::vector<std::string>& m_recentFiles) {
     table->hideColumn(1);
 
     // CONNECTIONS
-    connect(table, &QTableWidget::itemDoubleClicked, [table] (QTableWidgetItem *item) {
+    connect(table, &QTableWidget::itemDoubleClicked, [this, table] (QTableWidgetItem *item) {
         int row = item->row();
         QTableWidgetItem* itemPath = table->item(row, 1);
         std::string path = itemPath->text().toUtf8().data();
-        if (path.substr(path.size() - 4) == ".mp3") {
-            qDebug() << "open file.mp3";
-        } else if (path.substr(path.size() - 4) == ".wav") {
-            qDebug() << "open file.wav";
+
+        if ((path.substr(path.size() - 4) == ".mp3"
+            || path.substr(path.size() - 4) == ".wav")
+            && !HasDuplicate(QString(path.c_str()))) {
+
+            // ADD TO PLAYLIST MESSAGE BOX
+            int resp = QMessageBox::question(this, tr("Select"),
+                                             tr("New item was chosen to open.\n"
+                                                "Do you want to add it to opened playlist?"),
+                                             QMessageBox::Ok | QMessageBox::Cancel);
+            if (resp == QMessageBox::Ok) {
+                    LoadSong(path);
+            } else {
+                m_playlist->UnselectList();
+                m_playlist->ClearPlaylist();
+                LoadSong(path);
+            }
         } else {
-            qDebug() << "open playlist";
+            if ((path.size() > 4 && path.substr(path.size() - 4, 4) == ".m3u")
+                || (path.size() > 5 && path.substr(path.size() - 5, 5) == ".m3u8"))
+            {
+                m_playlist->UnselectList();
+                m_playlist->ClearPlaylist();
+                ParseM3U(path);
+            } else if (path.size() > 9 && path.substr(path.size() - 9, 9) == ".jplaylst") {
+                m_playlist->UnselectList();
+                m_playlist->ClearPlaylist();
+                ParseJPLAYLST(path);
+            }
         }
     });
     dialog.setLayout(vLayout);

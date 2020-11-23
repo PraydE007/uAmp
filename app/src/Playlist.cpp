@@ -4,11 +4,13 @@
 Playlist::Playlist(QTreeWidget* treeWidget, ProgressBar* progressBar, QSlider* slider) :
 m_slider(slider),
 m_progressBar(progressBar),
-m_treeWidget(treeWidget)
+m_treeWidget(treeWidget),
+m_playlist(new QMediaPlaylist(this))
 {
     m_player = new QMediaPlayer();
     m_player->setVolume(50);
     m_slider->setValue(50);
+    m_progressBar->setTextVisible(false);
 
     connect(m_slider, &QAbstractSlider::valueChanged, [this](int value) {
         m_player->setVolume(value);
@@ -18,16 +20,34 @@ m_treeWidget(treeWidget)
     connect(m_progressBar, &QProgressBar::valueChanged, [this](int pos) {
         m_player->setPosition(pos);
     });
-    connect(m_player, &QMediaPlayer::stateChanged, [this](QMediaPlayer::State state) {
-        if (state == QMediaPlayer::StoppedState) {
-            if (m_mode == RepeatSong)
-                m_player->play();
-            else if (m_mode == RepeatPlaylist) {
-                qDebug() << "Song has ended";
-                this->Next();
-                this->Play();
-            }
+    connect(this, &Playlist::LoopSong, [this] {
+        m_playlist->clear();
+        m_playlist->addMedia(m_player->media());
+        m_playlist->setPlaybackMode(QMediaPlaylist::Loop);
+        m_player->setPlaylist(m_playlist);
+        this->Play();
+    });
+    connect(this, &Playlist::LoopPlaylist, [this] {
+        m_playlist->clear();
+        QModelIndex modelIndex = m_treeWidget->currentIndex();
+        int i = modelIndex.row();
+
+        for (i = 0; i < m_treeWidget->topLevelItemCount(); i++) {
+            m_playlist->addMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(i)->text(5)));
         }
+        m_playlist->setPlaybackMode(QMediaPlaylist::Loop);
+        m_player->setPlaylist(m_playlist);
+        this->Play();
+    });
+    connect(this, &Playlist::NoLoop, [this] {
+        m_playlist->clear();
+        QModelIndex modelIndex = m_treeWidget->currentIndex();
+        int i = modelIndex.row();
+        for (i = 0; i < m_treeWidget->topLevelItemCount(); i++) {
+            m_playlist->addMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(i)->text(5)));
+        }
+        m_player->setPlaylist(m_playlist);
+        this->Play();
     });
 }
 
@@ -44,12 +64,17 @@ void Playlist::Stop() {
 }
 
 void Playlist::ChangeRepeatMode() {
-    if (m_mode == NoRepeat)
+    if (m_mode == NoRepeat) {
         m_mode = RepeatSong;
-    else if (m_mode == RepeatSong)
+        emit LoopSong();
+    }
+    else if (m_mode == RepeatSong) {
         m_mode = RepeatPlaylist;
-    else
+        emit LoopPlaylist();
+    } else {
         m_mode = NoRepeat;
+        emit NoLoop();
+    }
 }
 
 Playlist::RepeatMode Playlist::GetMode() { return m_mode; }
@@ -80,7 +105,7 @@ void Playlist::PopSong() {
     delete item;
     // m_player->setMedia(nullptr);
     if (m_treeWidget->topLevelItemCount() <= 0) {
-        emit CurrentSongChanged("");
+        emit CurrentSongChanged("", "");
         AcceptSong("");
         emit NoImage();
     }
@@ -123,7 +148,7 @@ void Playlist::Next() {
         qDebug() << row;
         UnselectList();
         m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
-        AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
+        AcceptSong(m_treeWidget->topLevelItem(row)->text(5));
     }
 }
 
@@ -139,7 +164,7 @@ void Playlist::Prev() {
         }
         UnselectList();
         m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
-        AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
+        AcceptSong(m_treeWidget->topLevelItem(row)->text(5));
     }
 }
 
@@ -168,11 +193,18 @@ void Playlist::Shuffle() {
 }
 
 void Playlist::SetCurrent(int index) {
+<<<<<<< HEAD
     qDebug() << "index:" << index;
     AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
     emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(0));
+=======
+    AcceptSong(m_treeWidget->topLevelItem(index)->text(5));
+    emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(1), m_treeWidget->topLevelItem(index)->text(0));
+    if (this->GetMode() == NoRepeat)
+        emit NoLoop();
+>>>>>>> 5c36624100662713da0db46b500445a81848a88a
 
-    QByteArray dataCover = getCover(m_treeWidget->topLevelItem(index)->text(4));
+    QByteArray dataCover = getCover(m_treeWidget->topLevelItem(index)->text(5));
 
     if (!dataCover.isEmpty()) {
         QPixmap pixmap;

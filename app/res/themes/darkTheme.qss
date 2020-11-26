@@ -44,23 +44,29 @@ QHeaderView::section {
     border-bottom: 0px;
 }
 
-/*QSlider::groove:horizontal {*/
-/*    height: 2px;*/
-/*    margin: 2px 0;*/
-/*}*/
+QTreeWidget {
+    selection-background-color: #BB86FC;
+}
 
-/*QSlider::handle:horizontal {*/
-/*    background: rgba(255, 255, 255, 15);*/
-/*    margin: -2px 0;*/
-/*    border-radius: 3px;*/
-/*}*/
+QSlider::groove:horizontal {
+    height: 8px;
+    background: rgba(255, 255, 255, 5);
+    position: absolute; /* absolutely position 4px from the left and right of the widget. setting margins on the widget should work too... */
+    left: 4px; right: 4px;
+}
 
-/*QSlider::add-page:horizontal {*/
-/*    background: rgba(255, 255, 255, 5);*/
-/*}*/
+QSlider::handle:horizontal {
+    height: 28px;
+    width: 18px;
+    border-radius: 3px;
+    background: black;
+    margin: -6px -6px; /* expand outside the groove */
+}
 
-/*QSlider::sub-page:horizontal {*/
-/*    background: #BB86FC;*/
-/*}*/
+QSlider::add-page:horizontal {
+    background: rgba(255, 255, 255, 5);
+}
 
-/*QFrame {}*/
+QSlider::sub-page:horizontal {
+    background: #BB86FC;
+}

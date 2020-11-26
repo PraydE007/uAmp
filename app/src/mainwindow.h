@@ -20,6 +20,8 @@ public:
 private slots:
     void openRecentPlaylists();
     void openRecentSongs();
+    void ChangeTheme();
+    void Help();
 
 private:
     void ChangeRepeatMode();
@@ -66,6 +68,9 @@ private:
     QIcon rewindIcon{"app/res/images/rewind.png"};
     QIcon forwardIcon{"app/res/images/forward.png"};
     QIcon shuffleIcon{"app/res/images/shuffle.png"};
+
+    // THEME STYLE
+    bool m_isDark{false};
 
     // RECENTLY OPENED
     void createDialog(const std::vector<std::string>& m_recentFiles);

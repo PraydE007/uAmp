@@ -656,8 +656,16 @@
     <addaction name="actionShow_Playlists"/>
     <addaction name="actionShow_Songs"/>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionChange_Theme"/>
+    <addaction name="actionHelp"/>
+   </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuRecently_opened"/>
+   <addaction name="menuSettings"/>
   </widget>
   <action name="actionShow_Playlists">
    <property name="text">
@@ -673,6 +681,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionChange_Theme">
+   <property name="text">
+    <string>Change Theme</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
    </property>
   </action>
  </widget>

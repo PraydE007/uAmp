@@ -162,6 +162,7 @@ void MainWindow::SaveWindow2(rapidjson::Document& document) {
     document.AddMember("currentTime", rapidjson::Value().SetInt64(m_playlist->GetPosition()), document.GetAllocator());
     document.AddMember("currentSelected",
         rapidjson::Value().SetInt(m_ui->treeWidget->currentIndex().row()), document.GetAllocator());
+    document.AddMember("isDark", rapidjson::Value().SetBool(m_isDark), document.GetAllocator());
 }
 
 void MainWindow::ReadState1() {
@@ -185,12 +186,14 @@ void MainWindow::ReadState1() {
         if (document.HasMember("type") && document.HasMember("mode")
             && document.HasMember("volume") && document.HasMember("currentSong")
             && document.HasMember("currentTime") && document.HasMember("currentSelected")
-            && document.HasMember("songs") && document.HasMember("playlists"))
+            && document.HasMember("songs") && document.HasMember("playlists")
+            && document.HasMember("isDark"))
         {
             if (document["type"].IsString() && document["mode"].IsInt()
                 && document["volume"].IsInt() && document["currentSong"].IsString()
                 && document["currentTime"].IsInt64() && document["currentSelected"].IsInt()
-                && document["songs"].IsArray() && document["playlists"].IsArray())
+                && document["songs"].IsArray() && document["playlists"].IsArray()
+                && document["isDark"].IsBool())
             {
                 if (std::string(document["type"].GetString()) == "SaveState") {
                     ReadSongsArray(document["songs"]);
@@ -212,6 +215,8 @@ void MainWindow::ReadState2(rapidjson::Document& document) {
     if (document["currentSelected"].GetInt() >= 0)
         m_playlist->SelectIndex(document["currentSelected"].GetInt());
     m_playlist->SetTime(document["currentTime"].GetInt64());
+    if (document["isDark"].GetBool())
+        ChangeTheme();
 }
 
 void MainWindow::ChangeTheme() {

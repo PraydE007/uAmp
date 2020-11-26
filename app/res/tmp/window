@@ -5,6 +5,9 @@
     "currentSong": "",
     "currentTime": 0,
     "currentSelected": -1,
+    "isDark": true,
     "songs": [],
-    "playlists": []
+    "playlists": [
+        "./app/res/tmp/playlist"
+    ]
 }

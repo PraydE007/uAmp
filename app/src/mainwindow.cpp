@@ -53,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->fastForwardBtn, &QPushButton::clicked, m_playlist, &Playlist::Forward);
     connect(m_ui->actionShow_Playlists, &QAction::triggered, this, &MainWindow::openRecentPlaylists);
     connect(m_ui->actionShow_Songs, &QAction::triggered, this, &MainWindow::openRecentSongs);
+    connect(m_ui->actionChange_Theme, &QAction::triggered, this, &MainWindow::ChangeTheme);
+    connect(m_ui->actionHelp, &QAction::triggered, this, &MainWindow::Help);
 //    connect(m_ui->shuffleButton, &QPushButton::clicked, m_playlist, &Playlist::Shuffle);
 
     // LAMBDAS
@@ -210,6 +212,26 @@ void MainWindow::ReadState2(rapidjson::Document& document) {
     if (document["currentSelected"].GetInt() >= 0)
         m_playlist->SelectIndex(document["currentSelected"].GetInt());
     m_playlist->SetTime(document["currentTime"].GetInt64());
+}
+
+void MainWindow::ChangeTheme() {
+    qDebug() << "Change theme please!";
+
+    if (!m_isDark) {
+        QFile File("app/res/themes/darkTheme.qss");
+        File.open(QFile::ReadOnly);
+        QString StyleSheet = QLatin1String(File.readAll());
+
+        this->setStyleSheet(StyleSheet);
+        m_isDark = true;
+    } else {
+        this->setStyleSheet("");
+        m_isDark = false;
+    }
+}
+
+void MainWindow::Help() {
+    qDebug() << "Someone needs your help!";
 }
 
 void MainWindow::OpenSong() {
@@ -415,21 +437,23 @@ bool MainWindow::HasDuplicate(QString fileName) {
 }
 
 void MainWindow::SavePlaylist() {
-    QString selectedFilter;
-    QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save Playlist"), "",
-        tr("M3U Playlist (*.m3u);;M3U Unicode Playlist (*.m3u8);;JPLAYLST Playlist (*.jplaylst);;All Files (*)"),
-        &selectedFilter
-    );
-
-    if (fileName.isEmpty())
-        return;
-    else if (m_ui->treeWidget->topLevelItemCount() > 0) {
+    if (m_ui->treeWidget->topLevelItemCount() > 0) {
+        QString selectedFilter;
+        QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save Playlist"), "",
+            tr("M3U Playlist (*.m3u);;M3U Unicode Playlist (*.m3u8);;JPLAYLST Playlist (*.jplaylst);;All Files (*)"),
+            &selectedFilter
+        );
+        if (fileName.isEmpty())
+            return;
         if (selectedFilter == "M3U Playlist (*.m3u)" ||
             selectedFilter == "M3U Unicode Playlist (*.m3u8)")
             SaveM3U(fileName);
         else if (selectedFilter == "JPLAYLST Playlist (*.jplaylst)")
             SaveJPLAYLST(fileName);
+    }
+    else {
+        this->ShowMessageOk("You cannot save an empty playlist!");
     }
 }
 

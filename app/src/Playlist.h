@@ -71,4 +71,7 @@ private:
     QTreeWidget* m_treeWidget;
     QMediaPlayer* m_player;
     QMediaPlaylist* m_playlist;
+
+    // TO TRACK END OF SONG
+    qint64 m_pos{0};
 };

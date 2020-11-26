@@ -1,30 +1,4 @@
 {
     "type": "JPLAYLST",
-    "playlist": [
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/25.  Metallica  -  Whiskey In The Jar.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/24.  Metallica  -  Until It Sleeps.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/23.  Metallica  -  Moth Into Flame.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/22.  Metallica  -  Blackened.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/21.  Metallica  -  Creeping Death.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/20.  Metallica  -  Through The Never.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/19.  Metallica  -  King Nothing.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/18.  Metallica  -  ...And Justice For All.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/17.  Metallica  -  The Four Horsemen.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/16.  Metallica  -  Battery.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/15.  Metallica  -  Hardwired.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/14.  Metallica  -  Ride The Lightning.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/13.  Metallica  -  Wherever I May Roam.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/12.  Metallica  -  Fuel.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/11.  Metallica  -  Harvester Of Sorrow.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/10.  Metallica  -  Sad But True.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/09.  Metallica  -  Seek & Destroy.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/08.  Metallica  -  Welcome Home (Sanitarium).mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/07.  Metallica  -  Fade To Black.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/06.  Metallica  -  The Unforgiven.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/05.  Metallica  -  Master Of Puppets.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/04.  Metallica  -  For Whom The Bell Tolls.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/03.  Metallica  -  Nothing Else Matters.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/02.  Metallica  -  One.mp3",
-        "/Users/abondarenk/Music/Metallica - Essentials (2020)/01.  Metallica  -  Enter Sandman.mp3"
-    ]
+    "playlist": []
 }

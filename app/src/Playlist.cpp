@@ -17,37 +17,37 @@ m_playlist(new QMediaPlaylist(this))
     });
     connect(m_player, &QMediaPlayer::durationChanged, m_progressBar, &QProgressBar::setMaximum);
     connect(m_player, &QMediaPlayer::positionChanged, m_progressBar, &QProgressBar::setValue);
-    connect(m_progressBar, &QProgressBar::valueChanged, [this](int pos) {
-        m_player->setPosition(pos);
+    connect(m_player, &QMediaPlayer::mediaStatusChanged, [this](QMediaPlayer::MediaStatus status) {
+            if (status == QMediaPlayer::EndOfMedia) {
+                qDebug() << "Song has ended!";
+                if (this->GetMode() == RepeatSong) {
+                    qDebug() << "Repeat song mode";
+                m_player->setPosition(0);
+                m_progressBar->setValue(0);
+                this->Play();
+                } else if (this->GetMode() == NoRepeat) {
+                    qDebug() << "No repeat mode";
+                    QModelIndex modelIndex = m_treeWidget->currentIndex();
+                    int row = modelIndex.row();
+//
+                    if (row < m_treeWidget->topLevelItemCount() - 1) {
+                        this->Next();
+                        this->Play();
+                    }
+                } else {
+                    qDebug() << "Repeat playlist";
+                this->Next();
+                this->Play();
+                }
+            } else {
+                qDebug() << "Still playing";
+            }
     });
-    connect(this, &Playlist::LoopSong, [this] {
-        m_playlist->clear();
-        m_playlist->addMedia(m_player->media());
-        m_playlist->setPlaybackMode(QMediaPlaylist::Loop);
-        m_player->setPlaylist(m_playlist);
-        this->Play();
-    });
-    connect(this, &Playlist::LoopPlaylist, [this] {
-        m_playlist->clear();
-        QModelIndex modelIndex = m_treeWidget->currentIndex();
-        int i = modelIndex.row();
-
-        for (i = 0; i < m_treeWidget->topLevelItemCount(); i++) {
-            m_playlist->addMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(i)->text(5)));
+    connect(m_progressBar, &QProgressBar::valueChanged, [this](qint64 pos) {
+        if (m_player->position() != m_progressBar->value()) {
+            m_player->setPosition(pos);
+            m_pos = pos;
         }
-        m_playlist->setPlaybackMode(QMediaPlaylist::Loop);
-        m_player->setPlaylist(m_playlist);
-        this->Play();
-    });
-    connect(this, &Playlist::NoLoop, [this] {
-        m_playlist->clear();
-        QModelIndex modelIndex = m_treeWidget->currentIndex();
-        int i = modelIndex.row();
-        for (i = 0; i < m_treeWidget->topLevelItemCount(); i++) {
-            m_playlist->addMedia(QUrl::fromLocalFile(m_treeWidget->topLevelItem(i)->text(5)));
-        }
-        m_player->setPlaylist(m_playlist);
-        this->Play();
     });
 }
 

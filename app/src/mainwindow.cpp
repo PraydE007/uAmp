@@ -312,7 +312,8 @@ void MainWindow::ParseM3U(std::string filepath) {
                 LoadSong(buffer);
         }
     }
-    m_recentPlaylists.push_back(filepath);
+    if (std::find(m_recentPlaylists.begin(), m_recentPlaylists.end(), filepath) == m_recentPlaylists.end())
+        m_recentPlaylists.push_back(filepath);
     fstream.close();
 }
 
@@ -336,7 +337,11 @@ void MainWindow::ParseJPLAYLST(std::string filepath) {
                 if (std::string(document["type"].GetString()) == "JPLAYLST") {
                     if (document.HasMember("playlist")) {
                         if (document["playlist"].IsArray()) {
-                            m_recentPlaylists.push_back(filepath);
+                            if (std::find(m_recentPlaylists.begin(), m_recentPlaylists.end(), filepath)
+                                == m_recentPlaylists.end())
+                            {
+                                m_recentPlaylists.push_back(filepath);
+                            }
                             JPLAYLST_ArrayRead(document["playlist"]);
                             return;
                         }
@@ -377,7 +382,11 @@ void MainWindow::ReadSongsArray(const rapidjson::Value& array) {
 
             if (fd > 0) {
                 ::close(fd);
-                m_recentSongs.push_back(array[i].GetString());
+                if (std::find(m_recentSongs.begin(), m_recentSongs.end(), array[i].GetString())
+                    == m_recentSongs.end())
+                {
+                    m_recentSongs.push_back(array[i].GetString());
+                }
             }
             else
                 ferr = true;
@@ -396,7 +405,11 @@ void MainWindow::ReadPlaylistsArray(const rapidjson::Value& array) {
 
             if (fd > 0) {
                 ::close(fd);
-                m_recentPlaylists.push_back(array[i].GetString());
+                if (std::find(m_recentPlaylists.begin(), m_recentPlaylists.end(), array[i].GetString())
+                    == m_recentPlaylists.end())
+                {
+                    m_recentPlaylists.push_back(array[i].GetString());
+                }
             }
             else
                 ferr = true;
@@ -408,7 +421,7 @@ void MainWindow::ReadPlaylistsArray(const rapidjson::Value& array) {
 
 bool MainWindow::HasDuplicate(QString fileName) {
     for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++) {
-        if (m_ui->treeWidget->topLevelItem(i)->text(4) == fileName)
+        if (m_ui->treeWidget->topLevelItem(i)->text(5) == fileName)
             return true;
     }
     return false;
@@ -446,7 +459,7 @@ void MainWindow::SaveM3U(QString fileName) {
         of << '\n';
         of << "#EXTINF:" << -1 << ',' << m_ui->treeWidget->topLevelItem(i)->text(1).toUtf8().constData() // set track duration instead of -1!!!
             << " - " << m_ui->treeWidget->topLevelItem(i)->text(0).toUtf8().constData() << '\n';
-        of << m_ui->treeWidget->topLevelItem(i)->text(4).toUtf8().constData() << '\n';
+        of << m_ui->treeWidget->topLevelItem(i)->text(5).toUtf8().constData() << '\n';
     }
     of.close();
 }
@@ -464,7 +477,7 @@ void MainWindow::SaveJPLAYLST(QString fileName) {
 
     rapidjson::Value playlist(rapidjson::kArrayType);
     for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++) {
-        const char* string = m_ui->treeWidget->topLevelItem(i)->text(4).toUtf8().constData();
+        const char* string = m_ui->treeWidget->topLevelItem(i)->text(5).toUtf8().constData();
 
         playlist.PushBack(
             rapidjson::Value().SetString(string, ::strlen(string), document.GetAllocator()),

@@ -88,7 +88,7 @@ void Playlist::SelectIndex(int index) {
 
     m_treeWidget->topLevelItem(index)->setSelected(true);
     m_treeWidget->setCurrentItem(item);
-    AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
+    AcceptSong(m_treeWidget->topLevelItem(index)->text(5));
 }
 
 void Playlist::UnselectList() {
@@ -193,16 +193,10 @@ void Playlist::Shuffle() {
 }
 
 void Playlist::SetCurrent(int index) {
-<<<<<<< HEAD
-    qDebug() << "index:" << index;
-    AcceptSong(m_treeWidget->topLevelItem(index)->text(4));
-    emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(0));
-=======
     AcceptSong(m_treeWidget->topLevelItem(index)->text(5));
     emit CurrentSongChanged(m_treeWidget->topLevelItem(index)->text(1), m_treeWidget->topLevelItem(index)->text(0));
     if (this->GetMode() == NoRepeat)
         emit NoLoop();
->>>>>>> 5c36624100662713da0db46b500445a81848a88a
 
     QByteArray dataCover = getCover(m_treeWidget->topLevelItem(index)->text(5));
 

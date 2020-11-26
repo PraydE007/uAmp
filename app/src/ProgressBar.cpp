@@ -22,9 +22,6 @@ bool ProgressBar::event(QEvent * event) {
             m_mousePressed = false;
         } else if (event->type() == QEvent::MouseMove && m_mousePressed) {
             QMouseEvent *moveEvent = static_cast<QMouseEvent *>(event);
-            qDebug() << "Progress bar was clicked or moved";
-            qDebug() << "Current position is " << moveEvent->pos();
-            qDebug() << "Width of a widget " << this->width();
             int value = (this->maximum() * moveEvent->pos().x()) / (this->width() - 1);
             this->reset();
             this->setValue(value);

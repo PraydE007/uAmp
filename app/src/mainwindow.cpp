@@ -54,38 +54,31 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->actionShow_Playlists, &QAction::triggered, this, &MainWindow::openRecentPlaylists);
     connect(m_ui->actionShow_Songs, &QAction::triggered, this, &MainWindow::openRecentSongs);
     connect(m_ui->actionChange_Theme, &QAction::triggered, this, &MainWindow::ChangeTheme);
-    connect(m_ui->actionHelp, &QAction::triggered, this, &MainWindow::Help);
-//    connect(m_ui->shuffleButton, &QPushButton::clicked, m_playlist, &Playlist::Shuffle);
+    connect(m_ui->shuffleButton, &QPushButton::clicked, m_playlist, &Playlist::Shuffle);
+    connect(m_ui->treeWidget, &QTreeWidget::customContextMenuRequested,this,&MainWindow::prepareMenu);
 
     // LAMBDAS
-    connect(m_ui->shuffleButton, &QPushButton::clicked, [this] {
-        m_playlist->Shuffle();
-        m_ui->songNameLabel->setText(tr(""));
-        m_ui->fileLabel->setText(tr(""));
-        m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
-    });
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
         [this](const QModelIndex &index) {
             if (index.row() >= 0) {
-                qDebug() << "current Row Changed SetCurrent";
-                qDebug() << "row:" << index.row();
                 m_playlist->SetCurrent(index.row());
             }
         }
     );
-    connect(m_ui->treeWidget, &QTreeWidget::customContextMenuRequested,this,&MainWindow::prepareMenu);
+
     connect(m_playlist, &Playlist::CurrentSongChanged,
         [this](const QString& song, const QString& name) {
             m_ui->songNameLabel->setText(song);
             m_ui->fileLabel->setText(name);
         }
     );
+
     connect(m_playlist, &Playlist::CurrentImageChanged,
         [this](QPixmap pixmap) {
-            qDebug() << "Image changed!";
             m_ui->albumImage->setPixmap(pixmap);
         }
     );
+
     connect(m_playlist, &Playlist::NoImage,
         [this] {
             m_ui->albumImage->setPixmap(QPixmap::fromImage(emptyImage));
@@ -99,7 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() {
     SaveState();
     delete m_ui;
-    // delete m_player;
 }
 
 void MainWindow::SaveState() {
@@ -220,8 +212,6 @@ void MainWindow::ReadState2(rapidjson::Document& document) {
 }
 
 void MainWindow::ChangeTheme() {
-    qDebug() << "Change theme please!";
-
     if (!m_isDark) {
         QFile File("app/res/themes/darkTheme.qss");
         File.open(QFile::ReadOnly);
@@ -233,10 +223,6 @@ void MainWindow::ChangeTheme() {
         this->setStyleSheet("");
         m_isDark = false;
     }
-}
-
-void MainWindow::Help() {
-    qDebug() << "Someone needs your help!";
 }
 
 void MainWindow::OpenSong() {
@@ -555,8 +541,6 @@ void MainWindow::prepareMenu(const QPoint & pos) {
     QTreeWidgetItem *nd = tree->itemAt(pos);
 
     if (nd) {
-        qDebug() << pos << nd->text(0);
-
         QAction *setTittle = new QAction(tr("Edit title"), this);
         QAction *setArtist = new QAction(tr("Edit artist"), this);
         QAction *setAlbum = new QAction(tr("Edit album"), this);
@@ -675,10 +659,7 @@ void MainWindow::createDialog(const std::vector<std::string>& m_recentFiles) {
 
     // FILL TABLE
     for (auto i = 0ul; i < m_recentFiles.size(); ++i) {
-        qDebug() << m_recentFiles[i].c_str();
         QFileInfo file(m_recentFiles[i].c_str());
-        qDebug() << file.baseName();
-        qDebug() << file.filePath();
         table->setItem(i, 0, new QTableWidgetItem(file.baseName()));
         table->setItem(i, 1, new QTableWidgetItem(file.filePath()));
     }
@@ -725,7 +706,6 @@ void MainWindow::createDialog(const std::vector<std::string>& m_recentFiles) {
 }
 
 void MainWindow::openRecentPlaylists() {
-    qDebug() << "open recent playlists";
     if (m_recentPlaylists.empty()) {
         this->ShowMessageOk("There is no recently opened playlists.");
     } else {
@@ -734,7 +714,6 @@ void MainWindow::openRecentPlaylists() {
 }
 
 void MainWindow::openRecentSongs() {
-    qDebug() << "open recent songs";
     if (m_recentSongs.empty()) {
         this->ShowMessageOk("There is no recently opened songs");
     } else {

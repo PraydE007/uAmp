@@ -661,7 +661,6 @@
      <string>Settings</string>
     </property>
     <addaction name="actionChange_Theme"/>
-    <addaction name="actionHelp"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuRecently_opened"/>

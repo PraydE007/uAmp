@@ -21,7 +21,6 @@ private slots:
     void openRecentPlaylists();
     void openRecentSongs();
     void ChangeTheme();
-    void Help();
 
 private:
     void ChangeRepeatMode();
@@ -47,7 +46,6 @@ private:
     void ShowErrorOk(std::string message);
 
     // PLAYLIST VARS
-    // RepeatMode repeatMode{NoRepeat};
     unsigned int selectedSong = 0;
 
     // SAVE STATE

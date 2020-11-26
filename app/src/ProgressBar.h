@@ -17,7 +17,6 @@ protected:
 private:
     bool m_mousePressed{false};
     bool m_songSelected{false};
-    // NOTHING FOR NOW
 };
 
 #endif //UAMP_PROGRESSBAR_H

@@ -7,5 +7,7 @@
     "currentSelected": -1,
     "isDark": false,
     "songs": [],
-    "playlists": []
+    "playlists": [
+        "./app/res/tmp/playlist"
+    ]
 }

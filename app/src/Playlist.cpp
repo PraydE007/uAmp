@@ -18,24 +18,24 @@ m_playlist(new QMediaPlaylist(this))
 
     // LAMBDAS
     connect(m_player, &QMediaPlayer::mediaStatusChanged, [this](QMediaPlayer::MediaStatus status) {
-            if (status == QMediaPlayer::EndOfMedia) {
-                if (this->GetMode() == RepeatSong) {
+        if (status == QMediaPlayer::EndOfMedia) {
+            if (this->GetMode() == RepeatSong) {
                 m_player->setPosition(0);
                 m_progressBar->setValue(0);
                 this->Play();
-                } else if (this->GetMode() == NoRepeat) {
-                    QModelIndex modelIndex = m_treeWidget->currentIndex();
-                    int row = modelIndex.row();
+            } else if (this->GetMode() == NoRepeat) {
+                QModelIndex modelIndex = m_treeWidget->currentIndex();
+                int row = modelIndex.row();
 
-                    if (row < m_treeWidget->topLevelItemCount() - 1) {
-                        this->Next();
-                        this->Play();
-                    }
-                } else {
+                if (row < m_treeWidget->topLevelItemCount() - 1) {
+                    this->Next();
+                    this->Play();
+                }
+            } else {
                 this->Next();
                 this->Play();
-                }
             }
+        }
     });
     connect(m_progressBar, &QProgressBar::valueChanged, [this](qint64 pos) {
         if (m_player->position() != m_progressBar->value()) {

@@ -18,30 +18,24 @@ m_playlist(new QMediaPlaylist(this))
     connect(m_player, &QMediaPlayer::durationChanged, m_progressBar, &QProgressBar::setMaximum);
     connect(m_player, &QMediaPlayer::positionChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_player, &QMediaPlayer::mediaStatusChanged, [this](QMediaPlayer::MediaStatus status) {
-            if (status == QMediaPlayer::EndOfMedia) {
-                qDebug() << "Song has ended!";
-                if (this->GetMode() == RepeatSong) {
-                    qDebug() << "Repeat song mode";
+        if (status == QMediaPlayer::EndOfMedia) {
+            if (this->GetMode() == RepeatSong) {
                 m_player->setPosition(0);
                 m_progressBar->setValue(0);
                 this->Play();
-                } else if (this->GetMode() == NoRepeat) {
-                    qDebug() << "No repeat mode";
-                    QModelIndex modelIndex = m_treeWidget->currentIndex();
-                    int row = modelIndex.row();
-//
-                    if (row < m_treeWidget->topLevelItemCount() - 1) {
-                        this->Next();
-                        this->Play();
-                    }
-                } else {
-                    qDebug() << "Repeat playlist";
-                this->Next();
-                this->Play();
+            } else if (this->GetMode() == NoRepeat) {
+                QModelIndex modelIndex = m_treeWidget->currentIndex();
+                int row = modelIndex.row();
+
+                if (row < m_treeWidget->topLevelItemCount() - 1) {
+                    this->Next();
+                    this->Play();
                 }
             } else {
-                qDebug() << "Still playing";
+                this->Next();
+                this->Play();
             }
+        }
     });
     connect(m_progressBar, &QProgressBar::valueChanged, [this](qint64 pos) {
         if (m_player->position() != m_progressBar->value()) {
@@ -112,40 +106,15 @@ void Playlist::PopSong() {
 }
 
 void Playlist::Next() {
-//    if (m_treeWidget->topLevelItemCount() > 0 && m_mode != RepeatSong) {
-//        QModelIndex modelIndex = m_treeWidget->currentIndex();
-//        int row = modelIndex.row();
-//
-//        if (row < m_treeWidget->topLevelItemCount() - 1)
-//            row++;
-//        else {
-//            if (m_mode != NoRepeat)
-//                row = 0;
-//        }
-//
-//        UnselectList();
-//
-//        if (m_mode != RepeatSong) {
-//            m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
-//            AcceptSong(m_treeWidget->topLevelItem(row)->text(4));
-//        } else {
-//            m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(modelIndex.row()));
-//            AcceptSong(m_treeWidget->topLevelItem(modelIndex.row())->text(4));
-//        }
-//    }
     if (m_treeWidget->topLevelItemCount() > 0) {
         QModelIndex modelIndex = m_treeWidget->currentIndex();
         int row = modelIndex.row();
 
-        qDebug() << row;
         if (row < m_treeWidget->topLevelItemCount() - 1) {
-            qDebug() << "There is something next";
             row++;
         } else {
-            qDebug() << "The last song";
             row = 0;
         }
-        qDebug() << row;
         UnselectList();
         m_treeWidget->setCurrentItem(m_treeWidget->topLevelItem(row));
         AcceptSong(m_treeWidget->topLevelItem(row)->text(5));
@@ -210,7 +179,6 @@ void Playlist::SetCurrent(int index) {
 }
 
 void Playlist::AcceptSongByUrl(QString url) {
-    qDebug() << "url:" << url;
     m_player->setMedia(QUrl(url));
     m_progressBar->setSelected(true);
     m_progressBar->reset();

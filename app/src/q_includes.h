@@ -40,7 +40,7 @@
 #include <QTableWidgetItem>
 
 // WARN
-#include <QDebug>
+// #include <QDebug>
 
 // TAGLIB
 #include "../../3dparty/lib1/id3v2tag.h"

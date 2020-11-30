@@ -67,8 +67,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->treeWidget->selectionModel(), &QItemSelectionModel::currentRowChanged,
         [this](const QModelIndex &index) {
             if (index.row() >= 0) {
-                qDebug() << "current Row Changed SetCurrent";
-                qDebug() << "row:" << index.row();
                 m_playlist->SetCurrent(index.row());
             }
         }
@@ -82,7 +80,6 @@ MainWindow::MainWindow(QWidget *parent)
     );
     connect(m_playlist, &Playlist::CurrentImageChanged,
         [this](QPixmap pixmap) {
-            qDebug() << "Image changed!";
             m_ui->albumImage->setPixmap(pixmap);
         }
     );
@@ -220,8 +217,6 @@ void MainWindow::ReadState2(rapidjson::Document& document) {
 }
 
 void MainWindow::ChangeTheme() {
-    qDebug() << "Change theme please!";
-
     if (!m_isDark) {
         QFile File("app/res/themes/darkTheme.qss");
         File.open(QFile::ReadOnly);
@@ -236,7 +231,7 @@ void MainWindow::ChangeTheme() {
 }
 
 void MainWindow::Help() {
-    qDebug() << "Someone needs your help!";
+    // qDebug() << "Someone needs your help!";
 }
 
 void MainWindow::OpenSong() {
@@ -555,8 +550,6 @@ void MainWindow::prepareMenu(const QPoint & pos) {
     QTreeWidgetItem *nd = tree->itemAt(pos);
 
     if (nd) {
-        qDebug() << pos << nd->text(0);
-
         QAction *setTittle = new QAction(tr("Edit title"), this);
         QAction *setArtist = new QAction(tr("Edit artist"), this);
         QAction *setAlbum = new QAction(tr("Edit album"), this);
@@ -675,10 +668,7 @@ void MainWindow::createDialog(const std::vector<std::string>& m_recentFiles) {
 
     // FILL TABLE
     for (auto i = 0ul; i < m_recentFiles.size(); ++i) {
-        qDebug() << m_recentFiles[i].c_str();
         QFileInfo file(m_recentFiles[i].c_str());
-        qDebug() << file.baseName();
-        qDebug() << file.filePath();
         table->setItem(i, 0, new QTableWidgetItem(file.baseName()));
         table->setItem(i, 1, new QTableWidgetItem(file.filePath()));
     }
@@ -725,7 +715,6 @@ void MainWindow::createDialog(const std::vector<std::string>& m_recentFiles) {
 }
 
 void MainWindow::openRecentPlaylists() {
-    qDebug() << "open recent playlists";
     if (m_recentPlaylists.empty()) {
         this->ShowMessageOk("There is no recently opened playlists.");
     } else {
@@ -734,7 +723,6 @@ void MainWindow::openRecentPlaylists() {
 }
 
 void MainWindow::openRecentSongs() {
-    qDebug() << "open recent songs";
     if (m_recentSongs.empty()) {
         this->ShowMessageOk("There is no recently opened songs");
     } else {
